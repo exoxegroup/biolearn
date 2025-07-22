@@ -1,0 +1,8 @@
+{
+  "name": "BioLearn AI",
+  "description": "A collaborative learning platform for Biology pre-service teachers and students, featuring AI-assisted group work, real-time communication, and performance analytics to support educational research.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
