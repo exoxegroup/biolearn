@@ -60,7 +60,11 @@ export const uploadMaterial = async (req: AuthRequest, res: Response) => {
 
     if (type === 'youtube') {
       if (!youtubeUrl) return res.status(400).json({ message: 'YouTube URL required' });
-      url = youtubeUrl;
+      // Parse YouTube URL to get video ID
+      const videoIdMatch = youtubeUrl.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      if (!videoIdMatch) return res.status(400).json({ message: 'Invalid YouTube URL' });
+      const videoId = videoIdMatch[1];
+      url = `https://www.youtube.com/embed/${videoId}`;
       materialType = 'youtube';
     } else if (file) {
       url = `/uploads/${file.filename}`;

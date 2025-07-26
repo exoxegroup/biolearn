@@ -1,2 +1,0 @@
-Read the entire project files. From the we stopped at Phase 3.1 Create endpoints for teachers to create/edit/delete classes, generate unique codes.
-Please confirm that we have actually developed the endpoints. Test them. If all tests passed. Lets uodate our that Phase 3.1 is complete then move to Phase 3.2 And note that we will follow it in a structured format. We take each Phase and sub-phase complete and test it is functional before moving to the next.

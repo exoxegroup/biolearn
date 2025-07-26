@@ -28,6 +28,8 @@ import classRoutes from './routes/classRoutes';
 import enrollmentRoutes from './routes/enrollmentRoutes';
 app.use('/api/classes', classRoutes);
 app.use('/api/enrollments', enrollmentRoutes);
+import materialRoutes from './routes/materialRoutes';
+app.use('/api/materials', materialRoutes);
 
 
 const PORT = process.env.BACKEND_PORT || 3001;
