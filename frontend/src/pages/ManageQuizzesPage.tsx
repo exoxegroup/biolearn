@@ -1,12 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { mockGetClassDetails, mockUpdateQuiz, mockSetPosttestReuse } from '../services/mockApi';
-import { ClassDetails, Quiz } from '../types';
-import Header from '../components/common/Header';
-import { Spinner } from '../components/common/Spinner';
+import { mockGetClassDetails, mockUpdateQuiz, mockSetPosttestReuse } from '../../services/mockApi';
+import { ClassDetails, Quiz } from '../../types';
+import Header from '../../components/common/Header';
+import { Spinner } from '../../components/common/Spinner';
 import { ArrowLeft, HelpCircle } from 'lucide-react';
-import QuizEditor from '../components/classroom/QuizEditor';
+import QuizEditor from '../../components/classroom/QuizEditor';
 
 const ManageQuizzesPage: React.FC = () => {
   const { classId } = useParams<{ classId: string }>();

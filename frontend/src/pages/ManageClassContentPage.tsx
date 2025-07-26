@@ -1,11 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import { mockGetClassDetails, mockAddMaterial, mockDeleteMaterial } from '../services/mockApi';
-import { ClassDetails, Material } from '../types';
-import Header from '../components/common/Header';
-import { Spinner } from '../components/common/Spinner';
+import { useAuth } from '../../hooks/useAuth';
+import { mockGetClassDetails, mockAddMaterial, mockDeleteMaterial } from '../../services/mockApi';
+import { ClassDetails, Material } from '../../types';
+import Header from '../../components/common/Header';
+import { Spinner } from '../../components/common/Spinner';
 import { ArrowLeft, FileText, Youtube, Trash2, Upload, Link as LinkIcon, PlusCircle } from 'lucide-react';
 
 const ManageClassContentPage: React.FC = () => {

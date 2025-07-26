@@ -1,13 +1,13 @@
 
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import { Spinner } from '../components/common/Spinner';
+import { useAuth } from '../../hooks/useAuth';
+import { Spinner } from '../../components/common/Spinner';
 import { ArrowLeft } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
-  const [email, setEmail] = useState('student@biolearn.com');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -18,13 +18,13 @@ const LoginPage: React.FC = () => {
     setError('');
     setLoading(true);
     try {
-      const user = await login(email);
+      const user = await login(email, password);
       if (user) {
         if (!user.isProfileComplete) {
-            navigate('/complete-profile');
+          navigate('/complete-profile');
         } else {
-            const targetDashboard = user.role === 'TEACHER' ? '/teacher-dashboard' : '/student-dashboard';
-            navigate(targetDashboard);
+          const targetDashboard = user.role === 'TEACHER' ? '/teacher-dashboard' : '/student-dashboard';
+          navigate(targetDashboard);
         }
       } else {
         setError('Invalid credentials. Please try again.');
@@ -40,7 +40,7 @@ const LoginPage: React.FC = () => {
     <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8 space-y-6 relative">
         <Link to="/" className="absolute top-4 left-4 text-slate-500 hover:text-teal-600 transition-colors">
-            <ArrowLeft size={24}/>
+          <ArrowLeft size={24}/>
         </Link>
         <div className="text-center">
           <h2 className="text-3xl font-bold text-teal-600">BioLearn AI</h2>
@@ -73,7 +73,6 @@ const LoginPage: React.FC = () => {
               className="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-lg shadow-sm bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
               placeholder="••••••••"
             />
-             <p className="mt-1 text-xs text-slate-500">Use `student@biolearn.com` or `teacher@biolearn.com` with any password.</p>
           </div>
           <button
             type="submit"

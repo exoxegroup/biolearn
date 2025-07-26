@@ -1,13 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import { mockGetTeacherClasses, mockCreateClass } from '../services/mockApi';
-import { ClassSummary } from '../types';
-import Header from '../components/common/Header';
-import { Spinner } from '../components/common/Spinner';
+import { useAuth } from '../../hooks/useAuth';
+import { mockGetTeacherClasses, mockCreateClass } from '../../services/mockApi';
+import { ClassSummary } from '../../types';
+import Header from '../../components/common/Header';
+import { Spinner } from '../../components/common/Spinner';
 import { PlusCircle, Users, ClipboardCopy, Settings, ClipboardList, BarChart3 } from 'lucide-react';
-import CreateClassModal from '../components/modals/CreateClassModal';
+import CreateClassModal from '../../components/modals/CreateClassModal';
 
 const ClassCard: React.FC<{ classInfo: ClassSummary }> = ({ classInfo }) => {
     const copyToClipboard = () => {

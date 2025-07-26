@@ -1,11 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import { mockGetStudentClasses } from '../services/mockApi';
-import { ClassSummary } from '../types';
-import Header from '../components/common/Header';
-import { Spinner } from '../components/common/Spinner';
+import { useAuth } from '../../hooks/useAuth';
+import { mockGetStudentClasses } from '../../services/mockApi';
+import { ClassSummary } from '../../types';
+import Header from '../../components/common/Header';
+import { Spinner } from '../../components/common/Spinner';
 import { LogIn, User } from 'lucide-react';
 
 const ClassCard: React.FC<{ classInfo: ClassSummary }> = ({ classInfo }) => (

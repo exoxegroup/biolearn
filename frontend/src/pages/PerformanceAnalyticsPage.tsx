@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { mockGetClassDetails } from '../services/mockApi';
-import { ClassDetails, EnrolledStudent } from '../types';
-import Header from '../components/common/Header';
-import { Spinner } from '../components/common/Spinner';
+import { mockGetClassDetails } from '../../services/mockApi';
+import { ClassDetails, EnrolledStudent } from '../../types';
+import Header from '../../components/common/Header';
+import { Spinner } from '../../components/common/Spinner';
 import { ArrowLeft, TrendingUp, BarChart3, UserCheck, Users, Milestone } from 'lucide-react';
 
 const StatCard: React.FC<{ icon: React.ReactNode; title: string; value: React.ReactNode; subtitle: string }> = ({ icon, title, value, subtitle }) => (

@@ -1,19 +1,19 @@
 
 import React from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
-import LandingPage from './pages/LandingPage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import TeacherDashboard from './pages/TeacherDashboard';
-import StudentDashboard from './pages/StudentDashboard';
-import ClassroomPage from './pages/ClassroomPage';
-import CompleteProfilePage from './pages/CompleteProfilePage';
+import { AuthProvider } from './src/contexts/AuthContext';
+import LandingPage from './src/pages/LandingPage';
+import LoginPage from './src/pages/LoginPage';
+import RegisterPage from './src/pages/RegisterPage';
+import TeacherDashboard from './src/pages/TeacherDashboard';
+import StudentDashboard from './src/pages/StudentDashboard';
+import ClassroomPage from './src/pages/ClassroomPage';
+import CompleteProfilePage from './src/pages/CompleteProfilePage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
-import ManageClassContentPage from './pages/ManageClassContentPage';
-import ManageQuizzesPage from './pages/ManageQuizzesPage';
-import ManageStudentsPage from './pages/ManageStudentsPage';
-import PerformanceAnalyticsPage from './pages/PerformanceAnalyticsPage';
+import ManageClassContentPage from './src/pages/ManageClassContentPage';
+import ManageQuizzesPage from './src/pages/ManageQuizzesPage';
+import ManageStudentsPage from './src/pages/ManageStudentsPage';
+import PerformanceAnalyticsPage from './src/pages/PerformanceAnalyticsPage';
 
 function App(): React.ReactNode {
   return (

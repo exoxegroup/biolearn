@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import { mockGetClassDetails, mockSetPretestTaken } from '../services/mockApi';
-import { ClassDetails, ClassroomStatus, EnrolledStudent } from '../types';
-import Header from '../components/common/Header';
-import { Spinner } from '../components/common/Spinner';
+import { useAuth } from '../../hooks/useAuth';
+import { mockGetClassDetails, mockSetPretestTaken } from '../../services/mockApi';
+import { ClassDetails, ClassroomStatus, EnrolledStudent } from '../../types';
+import Header from '../../components/common/Header';
+import { Spinner } from '../../components/common/Spinner';
 import { Play, Square, Users, Redo, LogOut } from 'lucide-react';
 
 // Sub-components for different classroom views
-import PretestView from '../components/classroom/PretestView';
-import PosttestView from '../components/classroom/PosttestView';
-import MainSessionView from '../components/classroom/MainSessionView';
-import GroupSessionView from '../components/classroom/GroupSessionView';
-import TeacherGroupMonitorView from '../components/classroom/TeacherGroupMonitorView';
+import PretestView from '../../components/classroom/PretestView';
+import PosttestView from '../../components/classroom/PosttestView';
+import MainSessionView from '../../components/classroom/MainSessionView';
+import GroupSessionView from '../../components/classroom/GroupSessionView';
+import TeacherGroupMonitorView from '../../components/classroom/TeacherGroupMonitorView';
 
 
 const ClassroomPage: React.FC = () => {

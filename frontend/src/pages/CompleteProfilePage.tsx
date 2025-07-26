@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import { Spinner } from '../components/common/Spinner';
+import { useAuth } from '../../hooks/useAuth';
+import { Spinner } from '../../components/common/Spinner';
 
 const CompleteProfilePage: React.FC = () => {
   const [phone, setPhone] = useState('');

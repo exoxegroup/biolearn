@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { mockGetClassDetails, mockAssignStudentsToGroups } from '../services/mockApi';
-import { ClassDetails, EnrolledStudent } from '../types';
-import Header from '../components/common/Header';
-import { Spinner } from '../components/common/Spinner';
+import { mockGetClassDetails, mockAssignStudentsToGroups } from '../../services/mockApi';
+import { ClassDetails, EnrolledStudent } from '../../types';
+import Header from '../../components/common/Header';
+import { Spinner } from '../../components/common/Spinner';
 import { ArrowLeft, Users, Save, Wand2 } from 'lucide-react';
 
 const ManageStudentsPage: React.FC = () => {

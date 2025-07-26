@@ -1,9 +1,9 @@
 
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import { Spinner } from '../components/common/Spinner';
-import { UserRole, Gender } from '../types';
+import { useAuth } from '../../hooks/useAuth';
+import { Spinner } from '../../components/common/Spinner';
+import { UserRole, Gender } from '../../types';
 import { ArrowLeft } from 'lucide-react';
 
 const RegisterPage: React.FC = () => {
@@ -13,7 +13,6 @@ const RegisterPage: React.FC = () => {
   const [role, setRole] = useState<UserRole>('STUDENT');
   const [gender, setGender] = useState<Gender>('MALE');
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -21,13 +20,16 @@ const RegisterPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setSuccess('');
     setLoading(true);
     try {
-      const newUser = await register(name, email, role, gender);
+      const newUser = await register(name, email, password, role, gender);
       if (newUser) {
-        setSuccess('Registration successful! You can now log in.');
-        setTimeout(() => navigate('/login'), 2000);
+        if (!newUser.isProfileComplete) {
+          navigate('/complete-profile');
+        } else {
+          const targetDashboard = newUser.role === 'TEACHER' ? '/teacher-dashboard' : '/student-dashboard';
+          navigate(targetDashboard);
+        }
       } else {
         setError('An account with this email may already exist.');
       }
@@ -42,7 +44,7 @@ const RegisterPage: React.FC = () => {
     <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8 space-y-6 relative">
         <Link to="/" className="absolute top-4 left-4 text-slate-500 hover:text-teal-600 transition-colors">
-            <ArrowLeft size={24}/>
+          <ArrowLeft size={24}/>
         </Link>
         <div className="text-center">
           <h2 className="text-3xl font-bold text-teal-600">Create Account</h2>
@@ -50,7 +52,6 @@ const RegisterPage: React.FC = () => {
         </div>
         
         {error && <div className="bg-red-100 text-red-700 p-3 rounded-lg text-sm">{error}</div>}
-        {success && <div className="bg-green-100 text-green-700 p-3 rounded-lg text-sm">{success}</div>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
