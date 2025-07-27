@@ -1,0 +1,2 @@
+Before testing, here are my cloudinary environment credentials: update the .env file with my credentials.
+

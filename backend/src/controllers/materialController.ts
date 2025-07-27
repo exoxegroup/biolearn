@@ -3,34 +3,30 @@ import prisma from '../prisma';
 import { AuthRequest } from '../middleware/authMiddleware';
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
+import { v2 as cloudinary } from 'cloudinary';
+import streamifier from 'streamifier';
 
-// Set up multer for file storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadPath = path.join(__dirname, '../../uploads');
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
-    }
-    cb(null, uploadPath);
-  },
-  filename: (req, file, cb) => {
-    const uniqueName = `${uuidv4()}${path.extname(file.originalname)}`;
-    cb(null, uniqueName);
-  }
+// Configure Cloudinary from environment variables
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Set up multer for memory storage (we'll stream to Cloudinary)
 export const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   fileFilter: (req, file, cb) => {
-    const allowedTypes = /pdf|docx/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
-    if (extname && mimetype) {
+    const allowedExtensions = ['.pdf', '.docx'];
+    const allowedMimetypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/octet-stream'];
+    const ext = path.extname(file.originalname).toLowerCase();
+    const isValidExt = allowedExtensions.includes(ext);
+    const isValidMime = allowedMimetypes.includes(file.mimetype);
+    if (isValidExt && (isValidMime || (ext === '.pdf' && file.mimetype === 'application/octet-stream'))) {
       cb(null, true);
     } else {
-      cb(new Error('Only PDF and DOCX files are allowed'));
+      cb(new Error('Only PDF and DOCX files are allowed. Check file extension and type.'));
     }
   }
 });
@@ -67,8 +63,36 @@ export const uploadMaterial = async (req: AuthRequest, res: Response) => {
       url = `https://www.youtube.com/embed/${videoId}`;
       materialType = 'youtube';
     } else if (file) {
-      url = `/uploads/${file.filename}`;
-      materialType = path.extname(file.originalname).slice(1);
+      const uniqueName = `${uuidv4()}${path.extname(file.originalname)}`;
+      const uploadStream = cloudinary.uploader.upload_stream(
+        { resource_type: 'raw', public_id: uniqueName },
+        async (error, result) => {
+          if (error) {
+            console.error('Cloudinary upload error:', error);
+            return res.status(500).json({ message: 'File upload failed' });
+          }
+          if (!result) {
+            console.error('No result from Cloudinary upload');
+            return res.status(500).json({ message: 'File upload failed' });
+          }
+          url = result.secure_url;
+          materialType = path.extname(file.originalname).slice(1);
+
+          const material = await prisma.material.create({
+            data: {
+              title: title || 'Untitled',
+              type: materialType as any,
+              url,
+              classId,
+            }
+          });
+
+          res.status(201).json(material);
+        }
+      );
+
+      streamifier.createReadStream(file.buffer).pipe(uploadStream);
+      return; // Return here to wait for the upload to complete
     } else {
       return res.status(400).json({ message: 'File or YouTube URL required' });
     }

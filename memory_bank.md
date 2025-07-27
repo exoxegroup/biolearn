@@ -10,7 +10,8 @@
 
 ## Next Steps
 ### Phase 3: Implement Class Management
-3.3 and 3.4. Add resource upload (PDF/DOCX) to https://cloudinary.com/ account more info in cloudinary_setup.md file and YouTube embed endpoints. Test locally.
+- Completed Phase 3.3: Implemented YouTube embed endpoints, allowing YouTube links to be uploaded as class materials. Verified URL parsing and storage in the Material table.
+3.4. Add resource upload (PDF/DOCX) to https://cloudinary.com/ account more info in cloudinary_setup.md file. Test locally.
 3.5. Connect frontend pages like TeacherDashboard.tsx and ClassroomPage.tsx to these endpoints. Test locally.
 3.6. Overall test: Create a class, enroll students, upload resources, verify data persistence in DB.
 

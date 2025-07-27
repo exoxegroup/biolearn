@@ -35,3 +35,15 @@ This document tracks the backend features that have been fully implemented accor
 - **3.2: Student Enrollment:** **[COMPLETED]**
   - Implemented the endpoint for students to enroll in a class using the unique class code.
   - The system correctly creates a `StudentEnrollment` record, linking the student to the appropriate class.
+
+- **3.3: YouTube Embed Integration:** **[COMPLETED]**
+  - Implemented endpoints for uploading and retrieving YouTube materials in `materialController.ts`
+  - Added URL parsing logic to convert YouTube watch URLs to embed format
+  - Created `materialRoutes.ts` for material management endpoints
+  - Integrated material routes into main server in `index.ts`
+  - Verified YouTube URLs are correctly stored in Material table's `url` field
+
+- **3.4: Resource Upload Integration (Cloudinary):** **[COMPLETED]**
+  - Integrated Cloudinary for uploading PDF and DOCX files.
+  - Updated materialController.ts to handle file uploads to Cloudinary instead of local storage.
+  - Configured for deployment compatibility.

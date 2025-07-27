@@ -1,0 +1,9 @@
+The project was initially built and tested using mock data. Now we are implementing the backend to work with database in order to replace the mock data. The environment settings is stored in .env file. Study the following files to understand the current state as we are to continue with Phas 3.4. This information can be found in   
+
+For phase 3.4 i have already gotten the api key to work with the following enviroment variables:
+Cloud name: dejz4py8y
+API key: 994818763361381
+API secret: 7RdirEb9WeCeTYLI0BYWvuR3UUA
+API environment variable: CLOUDINARY_URL=cloudinary://994818763361381:7RdirEb9WeCeTYLI0BYWvuR3UUA@dejz4py8y
+
+You can update the .env file. Study so that we begin.
