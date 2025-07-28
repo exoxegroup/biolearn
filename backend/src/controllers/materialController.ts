@@ -143,3 +143,34 @@ export const getMaterials = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+/**
+ * @route   DELETE /api/materials/:materialId
+ * @desc    Delete a material from a class (Teacher only)
+ * @access  Private
+ */
+export const deleteMaterial = async (req: AuthRequest, res: Response) => {
+  if (!req.user || req.user.role !== 'TEACHER') {
+    return res.status(403).json({ message: 'Only teachers can delete materials' });
+  }
+
+  const { materialId } = req.params;
+
+  try {
+    const material = await prisma.material.findUnique({ where: { id: materialId } });
+    if (!material) {
+      return res.status(404).json({ message: 'Material not found' });
+    }
+
+    const classRoom = await prisma.class.findUnique({ where: { id: material.classId } });
+    if (!classRoom || classRoom.teacherId !== req.user.id) {
+      return res.status(403).json({ message: 'You can only delete materials from your own classes' });
+    }
+
+    await prisma.material.delete({ where: { id: materialId } });
+    res.status(200).json({ message: 'Material deleted successfully' });
+  } catch (error) {
+    console.error('Delete material error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};

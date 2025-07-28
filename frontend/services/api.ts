@@ -60,3 +60,79 @@ export const updateUserProfile = async (
   });
   return handleResponse(response);
 };
+
+import { ClassSummary } from '../types';
+
+export const createClass = async (className: string, token: string): Promise<ClassSummary> => {
+  const response = await fetch(`${BASE_URL}/classes`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ name: className }),
+  });
+  const newClass = await handleResponse(response);
+  return {
+    id: newClass.id,
+    name: newClass.name,
+    classCode: newClass.classCode,
+    teacherName: '', // We'll fetch this if needed, or derive from current user
+    studentCount: 0,
+  };
+};
+
+export const getTeacherClasses = async (token: string): Promise<ClassSummary[]> => {
+  const response = await fetch(`${BASE_URL}/classes`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  const classes = await handleResponse(response);
+  return classes.map((cls: any) => ({
+    id: cls.id,
+    name: cls.name,
+    classCode: cls.classCode,
+    teacherName: '', // Derive or fetch as needed
+    studentCount: 0, // In real app, count enrollments
+  }));
+};
+
+export const getClassMaterials = async (classId: string, token: string) => {
+  const response = await fetch(`${BASE_URL}/materials/${classId}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  return handleResponse(response);
+};
+
+export const addMaterial = async (classId: string, formData: FormData, token: string) => {
+  const response = await fetch(`${BASE_URL}/materials/${classId}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    body: formData,
+  });
+  return handleResponse(response);
+};
+
+export const deleteMaterial = async (materialId: string, token: string) => {
+  const response = await fetch(`${BASE_URL}/materials/${materialId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  return handleResponse(response);
+};
+
+export const getClassDetails = async (classId: string, token: string) => {
+  const response = await fetch(`${BASE_URL}/classes/${classId}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  return handleResponse(response);
+};

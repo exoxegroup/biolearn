@@ -1,5 +1,5 @@
 import express from 'express';
-import { createClass, getTeacherClasses, updateClass, deleteClass } from '../controllers/classController';
+import { createClass, getTeacherClasses, updateClass, deleteClass, getClassDetails } from '../controllers/classController';
 import { protect } from '../middleware/authMiddleware';
 
 const router = express.Router();
@@ -23,5 +23,10 @@ router.put('/:id', protect, updateClass);
 // @desc    Delete a class
 // @access  Private (Teacher)
 router.delete('/:id', protect, deleteClass);
+
+// @route   GET /api/classes/:id
+// @desc    Get class details
+// @access  Private
+router.get('/:id', protect, getClassDetails);
 
 export default router;

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { mockGetClassDetails, mockAddMaterial, mockDeleteMaterial } from '../../services/mockApi';
+import { getClassDetails, addMaterial, deleteMaterial } from '../../services/api';
 import { ClassDetails, Material } from '../../types';
 import Header from '../../components/common/Header';
 import { Spinner } from '../../components/common/Spinner';
@@ -25,14 +25,16 @@ const ManageClassContentPage: React.FC = () => {
   useEffect(() => {
     const fetchDetails = async () => {
       if (!classId) return;
+      const token = localStorage.getItem('authToken') || '';
+      if (!token) {
+        setError('No authentication token found. Please log in again.');
+        setLoading(false);
+        return;
+      }
       setLoading(true);
       try {
-        const details = await mockGetClassDetails(classId);
-        if (details) {
-          setClassDetails(details);
-        } else {
-          setError('Class not found.');
-        }
+        const details = await getClassDetails(classId, token);
+        setClassDetails(details);
       } catch (err) {
         setError('Failed to load class details.');
       } finally {
@@ -45,44 +47,54 @@ const ManageClassContentPage: React.FC = () => {
   const handleAddYoutube = async (e: React.FormEvent) => {
       e.preventDefault();
       if (!youtubeTitle.trim() || !youtubeUrl.trim() || !classId) return;
+      const token = localStorage.getItem('authToken') || '';
+      if (!token) return;
       setIsSubmitting(true);
       try {
-          const newMaterial = await mockAddMaterial(classId, { type: 'youtube', title: youtubeTitle, url: youtubeUrl });
-          setClassDetails(prev => prev ? { ...prev, materials: [newMaterial, ...prev.materials] } : null);
-          setYoutubeTitle('');
-          setYoutubeUrl('');
+        const formData = new FormData();
+        formData.append('title', youtubeTitle);
+        formData.append('type', 'youtube');
+        formData.append('youtubeUrl', youtubeUrl);
+        const newMaterial = await addMaterial(classId, formData, token);
+        setClassDetails(prev => prev ? { ...prev, materials: [newMaterial, ...prev.materials] } : null);
+        setYoutubeTitle('');
+        setYoutubeUrl('');
       } catch (err) {
-          alert('Failed to add YouTube link.');
+        alert('Failed to add YouTube link.');
       } finally {
-          setIsSubmitting(false);
+        setIsSubmitting(false);
       }
   };
   
   const handleAddFile = async (e: React.FormEvent) => {
       e.preventDefault();
       if (!fileTitle.trim() || !file || !classId) return;
+      const token = localStorage.getItem('authToken') || '';
+      if (!token) return;
       setIsSubmitting(true);
-      const fileType = file.name.endsWith('.pdf') ? 'pdf' : 'docx';
       try {
-          // In a real app, you'd upload the file and get a URL. We'll use a placeholder.
-          const newMaterial = await mockAddMaterial(classId, { type: fileType, title: fileTitle, url: '#' });
-          setClassDetails(prev => prev ? { ...prev, materials: [newMaterial, ...prev.materials] } : null);
-          setFileTitle('');
-          setFile(null);
+        const formData = new FormData();
+        formData.append('title', fileTitle);
+        formData.append('file', file);
+        const newMaterial = await addMaterial(classId, formData, token);
+        setClassDetails(prev => prev ? { ...prev, materials: [newMaterial, ...prev.materials] } : null);
+        setFileTitle('');
+        setFile(null);
       } catch (err) {
-          alert('Failed to add file.');
+        alert('Failed to add file.');
       } finally {
-          setIsSubmitting(false);
+        setIsSubmitting(false);
       }
   };
 
   const handleDeleteMaterial = async (materialId: string) => {
-      if (!classId || !window.confirm('Are you sure you want to delete this material?')) return;
+      const token = localStorage.getItem('authToken') || '';
+      if (!classId || !token || !window.confirm('Are you sure you want to delete this material?')) return;
       try {
-          await mockDeleteMaterial(classId, materialId);
-          setClassDetails(prev => prev ? { ...prev, materials: prev.materials.filter(m => m.id !== materialId) } : null);
+        await deleteMaterial(materialId, token);
+        setClassDetails(prev => prev ? { ...prev, materials: prev.materials.filter(m => m.id !== materialId) } : null);
       } catch (err) {
-          alert('Failed to delete material.');
+        alert('Failed to delete material.');
       }
   };
 

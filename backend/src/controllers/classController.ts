@@ -131,3 +131,80 @@ export const deleteClass = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+/**
+ * @route   GET /api/classes/:id
+ * @desc    Get class details including materials
+ * @access  Private
+ */
+export const getClassDetails = async (req: AuthRequest, res: Response) => {
+  if (!req.user) {
+    return res.status(401).json({ message: 'Not authorized' });
+  }
+
+  const { id } = req.params;
+
+  try {
+    const classRoom = await prisma.class.findUnique({
+      where: { id },
+      include: {
+        materials: true,
+        pretest: true,
+        posttest: true,
+        enrollments: { include: { student: true } },
+        teacher: true,
+      },
+    });
+
+    if (!classRoom) {
+      return res.status(404).json({ message: 'Class not found' });
+    }
+
+    let authorized = false;
+    if (req.user.role === 'TEACHER' && classRoom.teacherId === req.user.id) {
+      authorized = true;
+    } else if (req.user.role === 'STUDENT') {
+      const enrollment = await prisma.studentEnrollment.findUnique({
+        where: {
+          classId_studentId: {
+            classId: id,
+            studentId: req.user.id
+          }
+        },
+      });
+      if (enrollment) {
+        authorized = true;
+      }
+    }
+
+    if (!authorized) {
+      return res.status(403).json({ message: 'Not authorized to view this class' });
+    }
+
+    const response = {
+      id: classRoom.id,
+      name: classRoom.name,
+      classCode: classRoom.classCode,
+      teacherName: classRoom.teacher.name,
+      studentCount: classRoom.enrollments.length,
+      materials: classRoom.materials,
+      students: classRoom.enrollments.map(e => ({
+        id: e.student.id,
+        name: e.student.name,
+        gender: e.student.gender,
+        pretestStatus: e.pretestScore !== null ? 'TAKEN' : 'NOT_TAKEN',
+        pretestScore: e.pretestScore,
+        posttestScore: e.posttestScore,
+        groupNumber: e.groupNumber,
+      })),
+      pretest: classRoom.pretest || { id: '', title: '', timeLimitMinutes: 0, questions: [] },
+      posttest: classRoom.posttest || { id: '', title: '', timeLimitMinutes: 0, questions: [] },
+      posttestUsesPretestQuestions: classRoom.posttestUsesPretestQuestions,
+    };
+
+    return res.status(200).json(response);
+  } catch (error) {
+    console.error('Get class details error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};

@@ -20,7 +20,7 @@ This document breaks down the full backend implementation into phased tasks, rep
 3.1 - Create endpoints for teachers to create/edit/delete classes, generate unique codes.
 3.2 - Implement student enrollment via class code.
 3.3 - Add YouTube embed endpoints **[COMPLETED]**
-3.4- Integrate Cloudinary for resource uploads (PDF/DOCX), configured for deployment on Render.com free-tier  see setup guide in cloudinary_setup.md file.
+3.4- Integrate Cloudinary for resource uploads (PDF/DOCX), configured for deployment on Render.com free-tier  see setup guide in cloudinary_setup.md file. **[COMPLETED]**
 3.5 - Connect frontend pages like StudentDashboard.tsx, TeacherDashboard.tsx and ClassroomPage.tsx to these endpoints.
 3.6 - Test: Create a class, enroll students, upload resources, verify data persistence in DB.
 

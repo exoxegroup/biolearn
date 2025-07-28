@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { mockGetTeacherClasses, mockCreateClass } from '../../services/mockApi';
+// ... existing code ...
 import { ClassSummary } from '../../types';
 import Header from '../../components/common/Header';
 import { Spinner } from '../../components/common/Spinner';
@@ -62,21 +62,26 @@ const TeacherDashboard: React.FC = () => {
   const { user } = useAuth();
 
   useEffect(() => {
-    const fetchClasses = async () => {
-      if (user) {
-        setLoading(true);
-        const fetchedClasses = await mockGetTeacherClasses(user.id);
-        setClasses(fetchedClasses);
-        setLoading(false);
-      }
-    };
-    fetchClasses();
+    const token = localStorage.getItem('authToken');
+    if (user && token) {
+      setLoading(true);
+      getTeacherClasses(token)
+        .then(fetchedClasses => setClasses(fetchedClasses))
+        .catch(error => console.error('Failed to fetch classes:', error))
+        .finally(() => setLoading(false));
+    }
   }, [user]);
 
   const handleCreateClass = async (className: string) => {
-    if (!user) return;
-    const newClassSummary = await mockCreateClass(user.id, className);
-    setClasses(prevClasses => [newClassSummary, ...prevClasses]);
+    const token = localStorage.getItem('authToken');
+    if (user && token) {
+      try {
+        const newClassSummary = await createClass(className, token);
+        setClasses(prevClasses => [newClassSummary, ...prevClasses]);
+      } catch (error) {
+        console.error('Failed to create class:', error);
+      }
+    }
   };
 
   return (
@@ -118,3 +123,5 @@ const TeacherDashboard: React.FC = () => {
 };
 
 export default TeacherDashboard;
+
+import { createClass, getTeacherClasses } from '../../services/api';
