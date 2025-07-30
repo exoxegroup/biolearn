@@ -48,17 +48,25 @@ The immediate focus is to complete the remaining tasks in Phase 3.
 
 ### Phase 3: Implement Class Management
 - **3.5:** Connect frontend pages like `TeacherDashboard.tsx` and `ClassroomPage.tsx` to the backend endpoints for resource management.
-- **3.6:** Perform comprehensive end-to-end testing of Phase 3:
+- **3.6:** Perform comprehensive end-to-end testing of Phase 3: **[COMPLETED]**
   - A teacher creates a class.
   - The teacher uploads a PDF and adds a YouTube link via the "Content" button on Teacher's dashboard.
   - Verify all data is correctly persisted in the database.
   - A student joins the class using the generated code. And once joined, the student can see the classes enrolled in.
-  - Teacher edit's the Class name.
-  - Teacher delete a class which cascade delete the Materials, Quizzes, and student records related to the class. This delete should show the user the consequences and the records that will be affected by deleting the class.
-
-
-
+ 
 Upon successful completion and verification of Phase 3, the project will proceed to **Phase 4: Implement Quiz Management**.
+
+## 2. Next Steps
+
+The immediate focus is to complete the remaining tasks in Phase 4.
+
+### Phase 4: Implement Quiz Management
+- **4.2:** Implement backend endpoints for quiz management
+  - Create endpoints for teachers to create/edit/delete quizzes
+  - Create endpoints for students to take quizzes
+- **4.3:** Implement quiz grading system
+  - Calculate scores automatically
+  - Store results in database
 
 ## 3. AI Collaboration Workflow
 

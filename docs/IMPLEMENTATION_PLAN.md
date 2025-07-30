@@ -115,6 +115,7 @@ This document outlines the tasks required to build a Node.js/Express backend and
     - **Controller (`quizController.ts`):**
         - `updateQuiz`: Allow teachers to create/update Pre- and Post-tests with questions, options, correct answers, and time limits. Handle the option to reuse pre-test questions for the post-test.
     - **Routes (`quizRoutes.ts`):** Create protected routes for creating and updating quizzes.
+    
 
 2.  **4.2: Quiz Submission and Scoring:**
     - **Controller (`quizController.ts`):**
@@ -226,6 +227,11 @@ This document outlines the tasks required to build a Node.js/Express backend and
 1. **8.1: Teacher dashboard:**
     - Teacher can rename a class.
     - Teacher can delete a class.
+     - Teacher edit's the Class name.
+  - Teacher delete a class which cascade delete the Materials, Quizzes, and student records related to the class. This delete should show the user the consequences and the records that will be affected by deleting the class.
+2. **8.2: Student dashboard:**
+    - Error pop's up when student tries to join a class with class-code that the student is already enrolled in.
+    - Student can view their test scores for each class.
 
 ---
 
