@@ -4,7 +4,7 @@ import { Quiz, QuizQuestion } from '../../types';
 
 interface PretestViewProps {
   quiz: Quiz;
-  onComplete: () => void;
+  onComplete: (answers: (number | null)[]) => void;
 }
 
 const PretestView: React.FC<PretestViewProps> = ({ quiz, onComplete }) => {
@@ -14,12 +14,12 @@ const PretestView: React.FC<PretestViewProps> = ({ quiz, onComplete }) => {
 
   useEffect(() => {
     if (timeLeft <= 0) {
-      onComplete();
+      onComplete(answers);
       return;
     }
     const timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
     return () => clearInterval(timer);
-  }, [timeLeft, onComplete]);
+  }, [timeLeft, onComplete, answers]);
 
   const handleAnswerSelect = (optionIndex: number) => {
     const newAnswers = [...answers];
@@ -36,7 +36,7 @@ const PretestView: React.FC<PretestViewProps> = ({ quiz, onComplete }) => {
   const handleSubmit = () => {
     // In a real app, we would submit `answers` to the backend here.
     alert('Pre-test submitted! You will now enter the waiting room.');
-    onComplete();
+    onComplete(answers);
   };
 
   const currentQuestion: QuizQuestion = quiz.questions[currentQuestionIndex];

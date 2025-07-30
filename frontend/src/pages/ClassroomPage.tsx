@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { mockGetClassDetails, mockSetPretestTaken } from '../../services/mockApi';
+import { getClassDetails, submitPretest } from '../../services/api';
 import { ClassDetails, ClassroomStatus, EnrolledStudent } from '../../types';
 import Header from '../../components/common/Header';
 import { Spinner } from '../../components/common/Spinner';
-import { Play, Square, Users, Redo, LogOut } from 'lucide-react';
+import { Play, Square, Users, Redo } from 'lucide-react';
 
 // Sub-components for different classroom views
 import PretestView from '../../components/classroom/PretestView';
@@ -25,48 +25,71 @@ const ClassroomPage: React.FC = () => {
   const [student, setStudent] = useState<EnrolledStudent | null>(null);
 
   useEffect(() => {
-    const fetchDetails = async () => {
-      if (!classId || !user) return;
+    const fetchClassDetails = async () => {
+      if (!classId || !user) {
+        setError('Invalid class or user.');
+        setLoading(false);
+        return;
+      }
       setLoading(true);
-      try {
-        const details = await mockGetClassDetails(classId, user.id);
-        if (details) {
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        try {
+          const details = await getClassDetails(classId, token);
           setClassDetails(details);
           if (user.role === 'STUDENT') {
-            const currentStudent = details.students.find(s => s.id === user.id);
+            const currentStudent = details.students.find((s: EnrolledStudent) => s.id === user.id);
             setStudent(currentStudent || null);
+            // If pre-test not taken, force pre-test view
             if (currentStudent?.pretestStatus === 'NOT_TAKEN') {
               setClassStatus('PRETEST');
+            } else {
+              // Otherwise, follow the class status from the backend
+              setClassStatus(details.status || 'WAITING_ROOM');
             }
+          } else {
+             setClassStatus(details.status || 'WAITING_ROOM');
           }
-        } else {
-          setError('Class not found.');
+        } catch (error) {
+          console.error('Failed to fetch class details:', error);
+          setError('Failed to load class details.');
+        } finally {
+          setLoading(false);
         }
-      } catch (err) {
-        setError('Failed to load class details.');
-      } finally {
+      } else {
+        setError('Authentication required.');
         setLoading(false);
       }
     };
-    fetchDetails();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchClassDetails();
+    // Polling/sockets will be added in Phase 6 for real-time updates.
   }, [classId, user]);
 
-  const handlePretestComplete = () => {
-    if (classId && user) {
-        mockSetPretestTaken(classId, user.id);
+  const handlePretestComplete = async (answers: (number | null)[]) => {
+    const token = localStorage.getItem('authToken');
+    if (token && classId) {
+      try {
+        await submitPretest(classId, answers, token);
+        // Refetch class details to update status and move to waiting room
+        const updatedDetails = await getClassDetails(classId, token);
+        setClassDetails(updatedDetails);
         setClassStatus('WAITING_ROOM');
+      } catch (error) {
+        console.error('Failed to submit pretest:', error);
+        setError('Failed to submit pretest. Please try again.');
+      }
     }
   };
-  
-  // MOCK REAL-TIME STATE CHANGES
+
+  // This function simulates real-time state changes.
+  // In Phase 6, this will be replaced with Socket.io events.
   const handleTeacherControl = (newStatus: ClassroomStatus) => {
-    console.log(`Teacher changed status to: ${newStatus}`);
-    // In a real app, this would emit a socket event.
-    // Here, we just set the state for all "connected" users (i.e., this one browser tab).
+    console.log(`Teacher action: Set status to ${newStatus}`);
+    // This is a placeholder for emitting a socket event to the backend.
+    // For now, it just updates the local state to demonstrate UI changes.
     setClassStatus(newStatus);
   };
-  
+
   const TeacherControls: React.FC = () => (
     <div className="bg-white p-3 rounded-lg shadow-md flex items-center gap-2">
       <p className="font-semibold text-slate-700 mr-2">Class Control:</p>
@@ -76,12 +99,12 @@ const ClassroomPage: React.FC = () => {
       <button onClick={() => handleTeacherControl('POSTTEST')} className="flex items-center gap-2 px-4 py-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600"><Square size={16}/> End Class</button>
     </div>
   );
-  
+
   const renderContent = () => {
     if (loading) return <div className="flex-grow flex items-center justify-center"><Spinner size="lg" /></div>;
     if (error) return <div className="flex-grow flex items-center justify-center text-red-500">{error}</div>;
     if (!classDetails) return <div className="flex-grow flex items-center justify-center">Class data is unavailable.</div>;
-    
+
     // Student View
     if (user?.role === 'STUDENT') {
       switch (classStatus) {

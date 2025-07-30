@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { mockGetStudentClasses } from '../../services/mockApi';
+import { getStudentClasses, enrollInClass } from '../../services/api';
 import { ClassSummary } from '../../types';
 import Header from '../../components/common/Header';
 import { Spinner } from '../../components/common/Spinner';
@@ -32,22 +32,35 @@ const StudentDashboard: React.FC = () => {
 
   useEffect(() => {
     const fetchClasses = async () => {
-      if (user) {
+      const token = localStorage.getItem('authToken');
+      if (user && token) {
         setLoading(true);
-        const fetchedClasses = await mockGetStudentClasses(user.id);
-        setClasses(fetchedClasses);
-        setLoading(false);
+        try {
+          const fetchedClasses = await getStudentClasses(token);
+          setClasses(fetchedClasses);
+        } catch (error) {
+          console.error('Failed to fetch classes:', error);
+        } finally {
+          setLoading(false);
+        }
       }
     };
     fetchClasses();
   }, [user]);
 
-  const handleJoinClass = (e: React.FormEvent) => {
+  const handleJoinClass = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would call an API endpoint to join the class.
-    // The mock API handles joining when fetching class details.
-    // For this UI, we just alert and rely on the user refreshing or the next fetch.
-    alert(`Joining class with code: ${classCode}. If successful, it will appear in your list.`);
+    const token = localStorage.getItem('authToken');
+    if (!token || !classCode) return;
+    try {
+      await enrollInClass(classCode, token);
+      // Refresh classes
+      const fetchedClasses = await getStudentClasses(token);
+      setClasses(fetchedClasses);
+      alert('Successfully joined the class!');
+    } catch (error) {
+      alert('Failed to join class. Please check the code and try again.');
+    }
     setClassCode('');
   }
 

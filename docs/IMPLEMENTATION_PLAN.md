@@ -102,6 +102,7 @@ This document outlines the tasks required to build a Node.js/Express backend and
         - A teacher creates a class.
         - A student joins the class using the code.
         - The teacher uploads a PDF and adds a YouTube link.
+        - Remaining CRUD operations on CLASS i.e Update, Delete.
         - Verify all data is correctly persisted in the database.
 
 ---
@@ -220,6 +221,11 @@ This document outlines the tasks required to build a Node.js/Express backend and
         - The students take the post-test.
         - The teacher reviews the performance analytics.
     - **Verification:** Confirm that all data is correctly persisted and that all features work as expected.
+
+### Phase 8: Additional Features and Refinements
+1. **8.1: Teacher dashboard:**
+    - Teacher can rename a class.
+    - Teacher can delete a class.
 
 ---
 

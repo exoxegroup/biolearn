@@ -12,6 +12,8 @@ export const enrollInClass = async (req: AuthRequest, res: Response) => {
     return res.status(403).json({ message: 'Only students can enroll' });
   }
 
+  console.log('Received enrollment request body:', req.body);
+
   const { classCode } = req.body;
 
   if (!classCode) {
@@ -77,6 +79,39 @@ export const getEnrollments = async (req: AuthRequest, res: Response) => {
     res.status(200).json(enrollments);
   } catch (error) {
     console.error('Get enrollments error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const getStudentClasses = async (req: AuthRequest, res: Response) => {
+  if (!req.user || req.user.role !== 'STUDENT') {
+    return res.status(403).json({ message: 'Only students can view their enrolled classes' });
+  }
+
+  try {
+    const enrollments = await prisma.studentEnrollment.findMany({
+      where: { studentId: req.user.id },
+      include: {
+        class: {
+          include: {
+            teacher: true,
+            enrollments: true
+          }
+        }
+      }
+    });
+
+    const classes = enrollments.map(e => ({
+      id: e.class.id,
+      name: e.class.name,
+      classCode: e.class.classCode,
+      teacherName: e.class.teacher.name,
+      studentCount: e.class.enrollments.length
+    }));
+
+    res.status(200).json(classes);
+  } catch (error) {
+    console.error('Get student classes error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

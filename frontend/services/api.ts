@@ -136,3 +136,43 @@ export const getClassDetails = async (classId: string, token: string) => {
   });
   return handleResponse(response);
 };
+
+export const getStudentClasses = async (token: string): Promise<ClassSummary[]> => {
+  const response = await fetch(`${BASE_URL}/enrollments/student`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  const classes = await handleResponse(response);
+  return classes.map((cls: any) => ({
+    id: cls.id,
+    name: cls.name,
+    classCode: cls.classCode,
+    teacherName: cls.teacherName,
+    studentCount: cls.studentCount,
+  }));
+};
+
+export const enrollInClass = async (classCode: string, token: string) => {
+  const response = await fetch(`${BASE_URL}/enrollments`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ classCode }),
+  });
+  return handleResponse(response);
+};
+
+export const submitPretest = async (classId: string, answers: (number | null)[], token: string) => {
+  const response = await fetch(`${BASE_URL}/quizzes/pretest`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ classId, answers }),
+  });
+  return handleResponse(response);
+};

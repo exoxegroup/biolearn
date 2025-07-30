@@ -11,7 +11,7 @@ This `docs` folder serves as the central repository for all project documentatio
 2.  **Follow the Workflow:**
     *   The `STATUS.md` file also outlines a specific workflow for initiating tasks with an AI.
     *   **Your Role:** State the task you want to start (e.g., "Let's begin Phase 4.1").
-    *   **AI's Role:** The AI will read `STATUS.md` and `IMPLEMENTATION_PLAN.md` to understand the task, explain the necessary steps, and wait for your approval before proceeding.
+    *   **AI's Role(Your role):** Read `STATUS.md` and `IMPLEMENTATION_PLAN.md` to understand the task, explain the necessary steps, and wait for your approval before proceeding.
 
 3.  **Reference Other Documents:**
     *   `PRODUCT_REQUIREMENTS.md`: Contains the "why" behind the features. It details the project's goals, user personas, and functional requirements.
