@@ -39,3 +39,6 @@ const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: string; role
     return res.status(401).json({ message: 'Not authorized, no token' });
   }
 };
+
+// Alias for protect to maintain compatibility
+export const authenticateToken = protect;

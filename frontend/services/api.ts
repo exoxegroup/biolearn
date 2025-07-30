@@ -176,3 +176,65 @@ export const submitPretest = async (classId: string, answers: (number | null)[],
   });
   return handleResponse(response);
 };
+
+// Quiz Management APIs
+export const updateQuiz = async (classId: string, quizData: {
+  title: string;
+  timeLimitMinutes: number;
+  questions: Array<{
+    text: string;
+    options: string[];
+    correctAnswerIndex: number;
+  }>;
+  quizType: 'PRETEST' | 'POSTTEST';
+}, token: string) => {
+  const response = await fetch(`${BASE_URL}/quizzes/classes/${classId}/quiz`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(quizData),
+  });
+  return handleResponse(response);
+};
+
+export const getQuiz = async (classId: string, quizType: 'PRETEST' | 'POSTTEST', token: string) => {
+  const response = await fetch(`${BASE_URL}/quizzes/classes/${classId}/quiz?type=${quizType}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  return handleResponse(response);
+};
+
+export const getQuizWithAnswers = async (classId: string, quizType: 'PRETEST' | 'POSTTEST', token: string) => {
+  const response = await fetch(`${BASE_URL}/quizzes/classes/${classId}/quiz/answers?type=${quizType}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  return handleResponse(response);
+};
+
+export const deleteQuiz = async (classId: string, quizType: 'PRETEST' | 'POSTTEST', token: string) => {
+  const response = await fetch(`${BASE_URL}/quizzes/classes/${classId}/quiz?type=${quizType}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  return handleResponse(response);
+};
+
+export const submitQuiz = async (classId: string, answers: number[], quizType: 'PRETEST' | 'POSTTEST', token: string) => {
+  const response = await fetch(`${BASE_URL}/quizzes/classes/${classId}/quiz/submit`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ classId, answers, quizType }),
+  });
+  return handleResponse(response);
+};

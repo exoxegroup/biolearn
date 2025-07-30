@@ -133,8 +133,7 @@ This document outlines the tasks required to build a Node.js/Express backend and
         - A teacher creates a pre-test and a post-test.
         - A student takes the pre-test.
         - A student takes the post-test.
-        - Verify scores are correctly saved in the database and displayed on the dashboards.
-
+        
 ---
 
 ### Phase 5: Implement Group and Collaboration Features
@@ -231,7 +230,10 @@ This document outlines the tasks required to build a Node.js/Express backend and
   - Teacher delete a class which cascade delete the Materials, Quizzes, and student records related to the class. This delete should show the user the consequences and the records that will be affected by deleting the class.
 2. **8.2: Student dashboard:**
     - Error pop's up when student tries to join a class with class-code that the student is already enrolled in.
+    - Error pop's up when student didnt select an answer to a quiz question.
     - Student can view their test scores for each class.
+    - When a student tries to join a class, and if the student is already enrolled for that class, a pop up message shows "You are already enrolled in this class".
+    - Student can see their scores displayed on their student dashboards.
 
 ---
 

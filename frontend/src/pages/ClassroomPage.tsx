@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { getClassDetails, submitPretest } from '../../services/api';
-import { ClassDetails, ClassroomStatus, EnrolledStudent } from '../../types';
+import { getClassDetails, submitPretest, getQuiz, submitQuiz } from '../../services/api';
+import { ClassDetails, ClassroomStatus, EnrolledStudent, Quiz } from '../../types';
 import Header from '../../components/common/Header';
 import { Spinner } from '../../components/common/Spinner';
 import { Play, Square, Users, Redo } from 'lucide-react';
@@ -19,6 +19,8 @@ const ClassroomPage: React.FC = () => {
   const { classId } = useParams<{ classId: string }>();
   const { user } = useAuth();
   const [classDetails, setClassDetails] = useState<ClassDetails | null>(null);
+  const [pretestQuiz, setPretestQuiz] = useState<Quiz | null>(null);
+  const [posttestQuiz, setPosttestQuiz] = useState<Quiz | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [classStatus, setClassStatus] = useState<ClassroomStatus>('WAITING_ROOM');
@@ -35,8 +37,16 @@ const ClassroomPage: React.FC = () => {
       const token = localStorage.getItem('authToken');
       if (token) {
         try {
-          const details = await getClassDetails(classId, token);
+          const [details, pretest, posttest] = await Promise.all([
+            getClassDetails(classId, token),
+            getQuiz(classId, 'PRETEST', token),
+            getQuiz(classId, 'POSTTEST', token)
+          ]);
+          
           setClassDetails(details);
+          setPretestQuiz(pretest);
+          setPosttestQuiz(posttest);
+          
           if (user.role === 'STUDENT') {
             const currentStudent = details.students.find((s: EnrolledStudent) => s.id === user.id);
             setStudent(currentStudent || null);
@@ -69,7 +79,9 @@ const ClassroomPage: React.FC = () => {
     const token = localStorage.getItem('authToken');
     if (token && classId) {
       try {
-        await submitPretest(classId, answers, token);
+        // Filter out null answers and convert to numbers
+        const validAnswers = answers.filter(answer => answer !== null) as number[];
+        await submitQuiz(classId, validAnswers, 'PRETEST', token);
         // Refetch class details to update status and move to waiting room
         const updatedDetails = await getClassDetails(classId, token);
         setClassDetails(updatedDetails);
@@ -77,6 +89,21 @@ const ClassroomPage: React.FC = () => {
       } catch (error) {
         console.error('Failed to submit pretest:', error);
         setError('Failed to submit pretest. Please try again.');
+      }
+    }
+  };
+
+  const handlePosttestComplete = async (answers: (number | null)[]) => {
+    const token = localStorage.getItem('authToken');
+    if (token && classId) {
+      try {
+        // Filter out null answers and convert to numbers
+        const validAnswers = answers.filter(answer => answer !== null) as number[];
+        await submitQuiz(classId, validAnswers, 'POSTTEST', token);
+        setClassStatus('ENDED');
+      } catch (error) {
+        console.error('Failed to submit posttest:', error);
+        setError('Failed to submit posttest. Please try again.');
       }
     }
   };
@@ -109,7 +136,12 @@ const ClassroomPage: React.FC = () => {
     if (user?.role === 'STUDENT') {
       switch (classStatus) {
         case 'PRETEST':
-          return <PretestView quiz={classDetails.pretest} onComplete={handlePretestComplete} />;
+          return pretestQuiz ? 
+            <PretestView quiz={pretestQuiz} onComplete={handlePretestComplete} /> : 
+            <div className="text-center p-8">
+              <h2 className="text-3xl font-bold">Pre-test not available</h2>
+              <p className="text-slate-600 mt-2">Please contact your teacher.</p>
+            </div>;
         case 'WAITING_ROOM':
           return <div className="text-center p-8">
             <h2 className="text-3xl font-bold">Welcome, {user.name}!</h2>
@@ -120,7 +152,12 @@ const ClassroomPage: React.FC = () => {
         case 'GROUP_SESSION':
           return <GroupSessionView classDetails={classDetails} student={student!} />;
         case 'POSTTEST':
-          return <PosttestView quiz={classDetails.posttest} onComplete={() => setClassStatus('ENDED')} />;
+          return posttestQuiz ? 
+            <PosttestView quiz={posttestQuiz} onComplete={handlePosttestComplete} /> : 
+            <div className="text-center p-8">
+              <h2 className="text-3xl font-bold">Post-test not available</h2>
+              <p className="text-slate-600 mt-2">Please contact your teacher.</p>
+            </div>;
         case 'ENDED':
             return <div className="text-center p-8">
                 <h2 className="text-3xl font-bold">Class has ended.</h2>

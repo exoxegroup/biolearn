@@ -4,7 +4,7 @@ import { Quiz, QuizQuestion } from '../../types';
 
 interface PosttestViewProps {
   quiz: Quiz;
-  onComplete: () => void;
+  onComplete: (answers: (number | null)[]) => void;
 }
 
 // This component is structurally identical to PretestView but separated for clarity
@@ -16,12 +16,12 @@ const PosttestView: React.FC<PosttestViewProps> = ({ quiz, onComplete }) => {
 
   useEffect(() => {
     if (timeLeft <= 0) {
-      onComplete();
+      onComplete(answers);
       return;
     }
     const timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
     return () => clearInterval(timer);
-  }, [timeLeft, onComplete]);
+  }, [timeLeft, onComplete, answers]);
 
   const handleAnswerSelect = (optionIndex: number) => {
     const newAnswers = [...answers];
@@ -38,7 +38,7 @@ const PosttestView: React.FC<PosttestViewProps> = ({ quiz, onComplete }) => {
   const handleSubmit = () => {
     // In a real app, we would submit `answers` to the backend here.
     alert('Post-test submitted! The class has now ended.');
-    onComplete();
+    onComplete(answers);
   };
 
   const currentQuestion: QuizQuestion = quiz.questions[currentQuestionIndex];
