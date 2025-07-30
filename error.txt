@@ -1,0 +1,72 @@
+PowerShell 7.5.2
+PS C:\Users\USER> $loginBody = @{ email = "teacher@test.com"; password = "password123" } | ConvertTo-Json
+PS C:\Users\USER> $response  = Invoke-RestMethod `
+>>   -Uri         "http://localhost:3001/api/auth/login" `
+>>   -Method      Post `
+>>   -ContentType "application/json" `
+>>   -Body        $loginBody
+PS C:\Users\USER> $teacherToken = $response.token
+PS C:\Users\USER> $classId = Read-Host -Prompt "Enter the Class ID"
+Enter the Class ID: cmdmb86my0001l5tcq2bm2kjr
+PS C:\Users\USER> $headers = @{
+>>   Authorization  = "Bearer $teacherToken"
+>>   "Content-Type" = "application/json"
+>> }
+PS C:\Users\USER> $body = @{
+>>   groupAssignments = @(
+>>     @{ studentId = "cmdma6nry0000l538ojfea0p1"; groupNumber = 1 },
+>>     @{ studentId = "cmdq4j1sb0001l5p8rlyyw3p0"; groupNumber = 1 },
+>>     @{ studentId = "cmdq4k5bx0002l5p8hdsxked0"; groupNumber = 2 },
+>>     @{ studentId = "cmdq4la170003l5p8evwvdl2x"; groupNumber = 2 },
+>>     @{ studentId = "cmdq4i4c60000l5p8iqmnvkzk"; groupNumber = 3 },
+>>     @{ studentId = "cmdq4n2j40004l5p83ppdrnd3"; groupNumber = 3 }
+>>   )
+>> } | ConvertTo-Json -Depth 3
+PS C:\Users\USER> Invoke-RestMethod `
+>>   -Uri    "http://localhost:3001/api/classes/$classId/groups" `
+>>   -Method Put `
+>>   -Headers $headers `
+>>   -Body    $body
+
+success message                                enrollments
+------- -------                                -----------
+   True Group assignments updated successfully {@{id=cmdpooycq000dl5ngycbdjjbj; classId=cmdmb86my0001l5tcq2bm2kjr; stu…
+
+PS C:\Users\USER>
+PS C:\Users\USER> Write-Host "✅ Groups assigned for class $classId"
+✅ Groups assigned for class cmdmb86my0001l5tcq2bm2kjr
+PS C:\Users\USER> $loginBody = @{ email = "n@gmail.com"; password = "Hamdala456" } | ConvertTo-Json
+PS C:\Users\USER> $response  = Invoke-RestMethod `
+>>   -Uri         "http://localhost:3001/api/auth/login" `
+>>   -Method      Post `
+>>   -ContentType "application/json" `
+>>   -Body        $loginBody
+PS C:\Users\USER> $teacherToken = $response.token
+PS C:\Users\USER> $classId = Read-Host -Prompt "Enter the Class ID"
+Enter the Class ID: cmdmb86my0001l5tcq2bm2kjr
+PS C:\Users\USER> $headers = @{
+>>   Authorization  = "Bearer $teacherToken"
+>>   "Content-Type" = "application/json"
+>> }
+PS C:\Users\USER> $body = @{
+>>   groupAssignments = @(
+>>     @{ studentId = "cmdma6nry0000l538ojfea0p1"; groupNumber = 1 },
+>>     @{ studentId = "cmdq4j1sb0001l5p8rlyyw3p0"; groupNumber = 1 },
+>>     @{ studentId = "cmdq4k5bx0002l5p8hdsxked0"; groupNumber = 2 },
+>>     @{ studentId = "cmdq4la170003l5p8evwvdl2x"; groupNumber = 2 },
+>>     @{ studentId = "cmdq4i4c60000l5p8iqmnvkzk"; groupNumber = 3 },
+>>     @{ studentId = "cmdq4n2j40004l5p83ppdrnd3"; groupNumber = 3 }
+>>   )
+>> } | ConvertTo-Json -Depth 3
+PS C:\Users\USER> Invoke-RestMethod `
+>>   -Uri    "http://localhost:3001/api/classes/$classId/groups" `
+>>   -Method Put `
+>>   -Headers $headers `
+>>   -Body    $body
+Invoke-RestMethod:
+{
+  "success": false,
+  "message": "Class not found or you do not have permission to manage this class"
+}
+PS C:\Users\USER>
+PS C:\Users\USER> Write-Host "✅ Groups assigned for class $classId"

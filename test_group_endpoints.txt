@@ -1,0 +1,38 @@
+# 1. Login and grab token
+$loginBody = @{ email = "teacher@test.com"; password = "password123" } | ConvertTo-Json
+$response  = Invoke-RestMethod `
+  -Uri         "http://localhost:3001/api/auth/login" `
+  -Method      Post `
+  -ContentType "application/json" `
+  -Body        $loginBody
+$teacherToken = $response.token
+
+# 2. Prompt for Class ID
+$classId = Read-Host -Prompt "Enter the Class ID"
+
+# 3. Set up headers
+$headers = @{
+  Authorization  = "Bearer $teacherToken"
+  "Content-Type" = "application/json"
+}
+
+# 4. Build the payload
+$body = @{
+  groupAssignments = @(
+    @{ studentId = "cmdma6nry0000l538ojfea0p1"; groupNumber = 1 },
+    @{ studentId = "cmdq4j1sb0001l5p8rlyyw3p0"; groupNumber = 1 },
+    @{ studentId = "cmdq4k5bx0002l5p8hdsxked0"; groupNumber = 2 },
+    @{ studentId = "cmdq4la170003l5p8evwvdl2x"; groupNumber = 2 },
+    @{ studentId = "cmdq4i4c60000l5p8iqmnvkzk"; groupNumber = 3 },
+    @{ studentId = "cmdq4n2j40004l5p83ppdrnd3"; groupNumber = 3 }
+  )
+} | ConvertTo-Json -Depth 3
+
+# 5. Call your PUT endpoint
+Invoke-RestMethod `
+  -Uri    "http://localhost:3001/api/classes/$classId/groups" `
+  -Method Put `
+  -Headers $headers `
+  -Body    $body
+
+Write-Host "✅ Groups assigned for class $classId"

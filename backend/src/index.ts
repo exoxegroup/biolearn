@@ -9,6 +9,7 @@ import classRoutes from './routes/classRoutes';
 import enrollmentRoutes from './routes/enrollmentRoutes';
 import materialRoutes from './routes/materialRoutes';
 import quizRoutes from './routes/quizRoutes';
+import groupRoutes from './routes/groupRoutes';
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 console.log('JWT_SECRET is set:', !!process.env.JWT_SECRET);
@@ -32,6 +33,7 @@ app.use('/api/classes', classRoutes);
 app.use('/api/enrollments', enrollmentRoutes);
 app.use('/api/materials', materialRoutes);
 app.use('/api/quizzes', quizRoutes);
+app.use('/api', groupRoutes);
 
 const PORT = process.env.BACKEND_PORT || 3001;
 

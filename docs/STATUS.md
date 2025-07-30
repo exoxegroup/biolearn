@@ -58,11 +58,30 @@ The project is developed in a structured, phased approach. The status of each ph
 - [COMPLETED] **4.4: Testing:**
     - Performed end-to-end testing of the entire quiz lifecycle.
 
+### Phase 5: AI Assistant Integration
+- [COMPLETED] **5.1: Group Management:**
+    - **Controller (`groupController.ts`):** Created functions to assign students to groups within a class (`assignGroups`) and get group assignments (`getGroupAssignments`).
+    - **Routes (`groupRoutes.ts`):** Created protected routes for group management.
+    - **Integration:** Added group routes to main server in `index.ts`.
+    - **Testing:** Successfully tested group assignment functionality with PowerShell commands - verified teachers can assign students to groups and retrieve group assignments.
+- [PENDING] **5.2: Shared Notes Persistence:**
+    - **Socket Event:** Create a `note:update` socket event handler.
+    - **Logic:** When a note is updated, save the content to the `GroupNote` table and broadcast the new content to the other members of that specific group room.
+- [PENDING] **5.3: AI Assistant Integration:**
+    - **Controller (`aiController.ts`):** Create a `getAIResponse` function that takes a prompt from the client. It should use the Gemini API key from the server's `.env` file to generate content and return the response.
+    - **Route (`aiRoutes.ts`):** Create a protected `POST /api/ai/query` route.
+- [PENDING] **5.4: Frontend Integration:**
+    - **UI:** Connect the student management UI to the `assignGroups` endpoint.
+    - **Shared Notes:** Modify `SharedNotes.tsx` to use sockets for real-time updates.
+    - **AI Assistant:** Modify `geminiService.ts` in the frontend to call the new secure `/api/ai/query` backend endpoint instead of the Google AI SDK directly. Remove the API key from the frontend environment.
+- [PENDING] **5.5: Testing:**
+    - **Local Tests:** A teacher assigns students to groups, students collaborate on notes, and students query the AI assistant.
+
 ---
 
 ## 2. Next Steps
 
-The immediate focus is to begin **Phase 5: AI Assistant Integration**.
+The immediate focus is to continue **Phase 5.2: Shared Notes Persistence** with socket event handlers.
 
 ## 3. AI Collaboration Workflow
 

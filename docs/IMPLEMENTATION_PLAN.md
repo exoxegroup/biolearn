@@ -136,7 +136,7 @@ This document outlines the tasks required to build a Node.js/Express backend and
         
 ---
 
-### Phase 5: Implement Group and Collaboration Features
+### Phase 5: Implement Group and Collaboration Features with AI integration
 
 **Goal:** Enable teachers to manage student groups and facilitate real-time collaboration with shared notes and an AI assistant.
 
