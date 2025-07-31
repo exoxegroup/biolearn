@@ -72,7 +72,13 @@ export const createClass = async (className: string, token: string): Promise<Cla
     },
     body: JSON.stringify({ name: className }),
   });
-  const newClass = await handleResponse(response);
+  
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Failed to create class');
+  }
+  
+  const newClass = await response.json();
   return {
     id: newClass.id,
     name: newClass.name,
@@ -235,6 +241,99 @@ export const submitQuiz = async (classId: string, answers: number[], quizType: '
       'Authorization': `Bearer ${token}`,
     },
     body: JSON.stringify({ classId, answers, quizType }),
+  });
+  return handleResponse(response);
+};
+
+// Group Management APIs
+export const assignStudentsToGroups = async (classId: string, assignments: { studentId: string, groupNumber: number | null }[], token: string) => {
+  const response = await fetch(`${BASE_URL}/classes/${classId}/groups`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ groupAssignments: assignments }),
+  });
+  return handleResponse(response);
+};
+
+export const getGroupAssignments = async (classId: string, token: string) => {
+  const response = await fetch(`${BASE_URL}/groups/${classId}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  return handleResponse(response);
+};
+
+// AI Assistant API
+export const getAIResponse = async (prompt: string, token: string) => {
+  const response = await fetch(`${BASE_URL}/ai/ask`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ prompt }),
+  });
+  return handleResponse(response);
+};
+
+// Chat APIs
+export const getChatHistory = async (classId: string, token: string, groupId?: number) => {
+  const url = groupId 
+    ? `${BASE_URL}/chat/history?classId=${classId}&groupId=${groupId}`
+    : `${BASE_URL}/chat/history?classId=${classId}`;
+  
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  return handleResponse(response);
+};
+
+export const sendChatMessage = async (classId: string, text: string, token: string, groupId?: number) => {
+  const response = await fetch(`${BASE_URL}/chat/send`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ classId, text, groupId }),
+  });
+  return handleResponse(response);
+};
+
+export const deleteChatMessage = async (messageId: string, token: string) => {
+  const response = await fetch(`${BASE_URL}/chat/messages/${messageId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  return handleResponse(response);
+};
+
+// Group Notes APIs
+export const getGroupNotes = async (classId: string, groupId: number, token: string) => {
+  const response = await fetch(`${BASE_URL}/groups/${classId}/${groupId}/notes`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  return handleResponse(response);
+};
+
+export const updateGroupNotes = async (classId: string, groupId: number, content: string, token: string) => {
+  const response = await fetch(`${BASE_URL}/groups/${classId}/${groupId}/notes`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ content }),
   });
   return handleResponse(response);
 };

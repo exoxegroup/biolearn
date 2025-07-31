@@ -8,53 +8,48 @@ datasource db {
 }
 
 model User {
-  id                String   @id @default(cuid())
-  email             String   @unique
+  id                String              @id @default(cuid())
+  email             String              @unique
   name              String
   password          String
   gender            Gender
   role              UserRole
   phone             String?
   address           String?
-  isProfileComplete Boolean  @default(false)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  // Relations
-  createdClasses    Class[]           @relation("ClassTeacher")
-  enrollments       StudentEnrollment[]
-  quizSubmissions   QuizSubmission[]
+  isProfileComplete Boolean             @default(false)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
   sentMessages      ChatMessage[]
+  createdClasses    Class[]             @relation("ClassTeacher")
+  quizSubmissions   QuizSubmission[]
+  enrollments       StudentEnrollment[]
 }
 
 model Class {
-  id                          String   @id @default(cuid())
-  name                        String
-  classCode                   String   @unique
-  teacherId                   String
-  posttestUsesPretestQuestions Boolean @default(false)
-  createdAt                   DateTime @default(now())
-  updatedAt                   DateTime @updatedAt
-
-  // Relations
-  teacher                     User                @relation("ClassTeacher", fields: [teacherId], references: [id], onDelete: Cascade)
-  enrollments                 StudentEnrollment[]
-  materials                   Material[]
-  pretest                     Quiz?               @relation("PretestForClass")
-  posttest                    Quiz?               @relation("PosttestForClass")
+  id                           String              @id @default(cuid())
+  name                         String
+  classCode                    String              @unique
+  teacherId                    String
+  posttestUsesPretestQuestions Boolean             @default(false)
+  status                       ClassStatus         @default(ACTIVE)
+  createdAt                    DateTime            @default(now())
+  updatedAt                    DateTime            @updatedAt
+  teacher                      User                @relation("ClassTeacher", fields: [teacherId], references: [id], onDelete: Cascade)
+  materials                    Material[]
+  posttest                     Quiz?               @relation("PosttestForClass")
+  pretest                      Quiz?               @relation("PretestForClass")
+  enrollments                  StudentEnrollment[]
 }
 
 model StudentEnrollment {
-  id            String   @id @default(cuid())
+  id            String @id @default(cuid())
   classId       String
   studentId     String
   groupNumber   Int?
   pretestScore  Float?
   posttestScore Float?
-
-  // Relations
-  class         Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
-  student       User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  class         Class  @relation(fields: [classId], references: [id], onDelete: Cascade)
+  student       User   @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([classId, studentId])
 }
@@ -66,23 +61,19 @@ model Material {
   title     String
   url       String
   createdAt DateTime     @default(now())
-
-  // Relations
   class     Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
 }
 
 model Quiz {
-  id               String       @id @default(cuid())
+  id               String           @id @default(cuid())
   title            String
   timeLimitMinutes Int
   type             QuizType
-  classId_pretest  String?      @unique
-  classId_posttest String?      @unique
-
-  // Relations
-  pretestForClass  Class?       @relation("PretestForClass", fields: [classId_pretest], references: [id])
-  posttestForClass Class?       @relation("PosttestForClass", fields: [classId_posttest], references: [id])
+  classId_pretest  String?          @unique
+  classId_posttest String?          @unique
   questions        Question[]
+  posttestForClass Class?           @relation("PosttestForClass", fields: [classId_posttest], references: [id])
+  pretestForClass  Class?           @relation("PretestForClass", fields: [classId_pretest], references: [id])
   submissions      QuizSubmission[]
 }
 
@@ -92,44 +83,38 @@ model Question {
   text               String
   options            String[]
   correctAnswerIndex Int
-
-  // Relations
   quiz               Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
 }
 
 model QuizSubmission {
-  id        String   @id @default(cuid())
-  quizId    String
-  studentId String
-  score     Float
+  id          String   @id @default(cuid())
+  quizId      String
+  studentId   String
+  score       Float
   submittedAt DateTime @default(now())
-
-  // Relations
-  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
-  student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  quiz        Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  student     User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
 
 model GroupNote {
-  id          String   @id @default(cuid())
-  classId     String
-  groupId     Int
-  content     String   @default("")
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  classId   String
+  groupId   Int
+  content   String   @default("")
+  updatedAt DateTime @updatedAt
 
   @@unique([classId, groupId])
 }
 
 model ChatMessage {
-  id          String    @id @default(cuid())
-  classId     String
-  groupId     Int? // Null for main classroom chat
-  senderId    String
-  text        String
-  isAI        Boolean   @default(false)
-  timestamp   DateTime  @default(now())
-
-  // Relations
-  sender      User      @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  id        String   @id @default(cuid())
+  classId   String
+  groupId   Int?
+  senderId  String
+  text      String
+  isAI      Boolean  @default(false)
+  timestamp DateTime @default(now())
+  sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
 }
 
 enum UserRole {
@@ -151,5 +136,13 @@ enum MaterialType {
 
 enum QuizType {
   PRETEST
+  POSTTEST
+}
+
+enum ClassStatus {
+  ACTIVE
+  INACTIVE
+  MAIN_SESSION
+  GROUP_SESSION
   POSTTEST
 }

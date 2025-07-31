@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { mockGetClassDetails, mockAssignStudentsToGroups } from '../../services/mockApi';
+import { getClassDetails, assignStudentsToGroups } from '../../services/api';
 import { ClassDetails, EnrolledStudent } from '../../types';
 import Header from '../../components/common/Header';
 import { Spinner } from '../../components/common/Spinner';
@@ -21,10 +21,17 @@ const ManageStudentsPage: React.FC = () => {
       if (!classId) return;
       setLoading(true);
       try {
-        const details = await mockGetClassDetails(classId);
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          setError('Authentication required. Please log in.');
+          setLoading(false);
+          return;
+        }
+        
+        const details = await getClassDetails(classId, token);
         if (details) {
           setClassDetails(details);
-          setStudents(details.students);
+          setStudents(details.students || []);
         } else {
           setError('Class not found.');
         }
@@ -76,8 +83,15 @@ const ManageStudentsPage: React.FC = () => {
     if (!classId) return;
     setIsSaving(true);
     try {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        alert('Authentication required. Please log in.');
+        setIsSaving(false);
+        return;
+      }
+      
       const assignments = students.map(s => ({ studentId: s.id, groupNumber: s.groupNumber }));
-      await mockAssignStudentsToGroups(classId, assignments);
+      await assignStudentsToGroups(classId, assignments, token);
       alert('Group assignments saved successfully!');
     } catch (err) {
       alert('Failed to save group assignments.');

@@ -5,6 +5,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { Spinner } from '../../components/common/Spinner';
 import { UserRole, Gender } from '../../types';
 import { ArrowLeft } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 const RegisterPage: React.FC = () => {
   const [name, setName] = useState('');
@@ -12,18 +13,17 @@ const RegisterPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<UserRole>('STUDENT');
   const [gender, setGender] = useState<Gender>('MALE');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
     try {
       const newUser = await register(name, email, password, role, gender);
       if (newUser) {
+        toast.success('Registration successful!');
         if (!newUser.isProfileComplete) {
           navigate('/complete-profile');
         } else {
@@ -31,10 +31,10 @@ const RegisterPage: React.FC = () => {
           navigate(targetDashboard);
         }
       } else {
-        setError('An account with this email may already exist.');
+        toast.error('An account with this email may already exist.');
       }
     } catch (err) {
-      setError('An error occurred during registration.');
+      toast.error('An error occurred during registration.');
     } finally {
       setLoading(false);
     }
@@ -51,7 +51,7 @@ const RegisterPage: React.FC = () => {
           <p className="mt-2 text-slate-600">Join BioLearn AI to start your journey.</p>
         </div>
         
-        {error && <div className="bg-red-100 text-red-700 p-3 rounded-lg text-sm">{error}</div>}
+
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

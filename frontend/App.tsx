@@ -2,6 +2,7 @@
 import React from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './src/contexts/AuthContext';
+import { Toaster } from 'react-hot-toast';
 import LandingPage from './src/pages/LandingPage';
 import LoginPage from './src/pages/LoginPage';
 import RegisterPage from './src/pages/RegisterPage';
@@ -18,6 +19,7 @@ import PerformanceAnalyticsPage from './src/pages/PerformanceAnalyticsPage';
 function App(): React.ReactNode {
   return (
     <AuthProvider>
+      <Toaster position="top-center" reverseOrder={false} />
       <HashRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />

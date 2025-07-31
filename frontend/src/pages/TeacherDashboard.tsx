@@ -8,6 +8,7 @@ import Header from '../../components/common/Header';
 import { Spinner } from '../../components/common/Spinner';
 import { PlusCircle, Users, ClipboardCopy, Settings, ClipboardList, BarChart3 } from 'lucide-react';
 import CreateClassModal from '../../components/modals/CreateClassModal';
+import { toast } from 'react-hot-toast';
 
 const ClassCard: React.FC<{ classInfo: ClassSummary }> = ({ classInfo }) => {
     const copyToClipboard = () => {
@@ -78,9 +79,14 @@ const TeacherDashboard: React.FC = () => {
       try {
         const newClassSummary = await createClass(className, token);
         setClasses(prevClasses => [newClassSummary, ...prevClasses]);
+        toast.success(`Class "${className}" created successfully!`);
       } catch (error) {
         console.error('Failed to create class:', error);
+        toast.error('Failed to create class. Please try again.');
+        throw error; // Re-throw to let modal handle the error
       }
+    } else {
+      toast.error('Authentication required. Please log in again.');
     }
   };
 

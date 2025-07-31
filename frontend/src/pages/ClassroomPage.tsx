@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { io, Socket } from 'socket.io-client';
 import { getClassDetails, submitPretest, getQuiz, submitQuiz } from '../../services/api';
 import { ClassDetails, ClassroomStatus, EnrolledStudent, Quiz } from '../../types';
 import Header from '../../components/common/Header';
 import { Spinner } from '../../components/common/Spinner';
 import { Play, Square, Users, Redo } from 'lucide-react';
+import JitsiVideo from '../../components/classroom/JitsiVideo';
 
 // Sub-components for different classroom views
 import PretestView from '../../components/classroom/PretestView';
@@ -25,6 +27,9 @@ const ClassroomPage: React.FC = () => {
   const [error, setError] = useState('');
   const [classStatus, setClassStatus] = useState<ClassroomStatus>('WAITING_ROOM');
   const [student, setStudent] = useState<EnrolledStudent | null>(null);
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [showVideo, setShowVideo] = useState(false);
+  const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchClassDetails = async () => {
@@ -47,7 +52,7 @@ const ClassroomPage: React.FC = () => {
           setPretestQuiz(pretest);
           setPosttestQuiz(posttest);
           
-          if (user.role === 'STUDENT') {
+          if (user && user.role === 'STUDENT') {
             const currentStudent = details.students.find((s: EnrolledStudent) => s.id === user.id);
             setStudent(currentStudent || null);
             // If pre-test not taken, force pre-test view
@@ -73,6 +78,50 @@ const ClassroomPage: React.FC = () => {
     };
     fetchClassDetails();
     // Polling/sockets will be added in Phase 6 for real-time updates.
+  }, [classId, user]);
+
+  // Socket.io connection and event handling
+  useEffect(() => {
+    if (!classId || !user) return;
+
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      setError('Authentication required.');
+      return;
+    }
+
+    // Initialize socket connection
+    const newSocket = io('http://localhost:3001', {
+      auth: {
+        token
+      }
+    });
+
+    newSocket.on('connect', () => {
+      console.log('Connected to classroom socket');
+      // Join the class room
+      newSocket.emit('join_room', { classId, userId: user?.id });
+    });
+
+    newSocket.on('class:state-changed', (data: { status: ClassroomStatus; message: string }) => {
+      console.log('Class state changed:', data);
+      setClassStatus(data.status);
+    });
+
+    newSocket.on('teacher:error', (data: { error: string }) => {
+      console.error('Teacher action error:', data.error);
+      setError(data.error);
+    });
+
+    newSocket.on('users:online', (data: { onlineUsers: string[] }) => {
+      setOnlineUsers(data.onlineUsers);
+    });
+
+    setSocket(newSocket);
+
+    return () => {
+      newSocket.disconnect();
+    };
   }, [classId, user]);
 
   const handlePretestComplete = async (answers: (number | null)[]) => {
@@ -108,13 +157,28 @@ const ClassroomPage: React.FC = () => {
     }
   };
 
-  // This function simulates real-time state changes.
-  // In Phase 6, this will be replaced with Socket.io events.
+  // Handle teacher controls with Socket.io
   const handleTeacherControl = (newStatus: ClassroomStatus) => {
+    if (!socket || !classId || !user || user.role !== 'TEACHER') {
+      console.error('Socket not available or user is not a teacher');
+      return;
+    }
+
     console.log(`Teacher action: Set status to ${newStatus}`);
-    // This is a placeholder for emitting a socket event to the backend.
-    // For now, it just updates the local state to demonstrate UI changes.
-    setClassStatus(newStatus);
+    
+    switch (newStatus) {
+      case 'MAIN_SESSION':
+        socket.emit('teacher:start-class', { classId });
+        break;
+      case 'GROUP_SESSION':
+        socket.emit('teacher:activate-groups', { classId });
+        break;
+      case 'POSTTEST':
+        socket.emit('teacher:end-class', { classId });
+        break;
+      default:
+        console.error('Invalid status for teacher control:', newStatus);
+    }
   };
 
   const TeacherControls: React.FC = () => (
@@ -133,7 +197,7 @@ const ClassroomPage: React.FC = () => {
     if (!classDetails) return <div className="flex-grow flex items-center justify-center">Class data is unavailable.</div>;
 
     // Student View
-    if (user?.role === 'STUDENT') {
+    if (user && user.role === 'STUDENT') {
       switch (classStatus) {
         case 'PRETEST':
           return pretestQuiz ? 
@@ -148,7 +212,34 @@ const ClassroomPage: React.FC = () => {
             <p className="text-slate-600 mt-2">The class will begin shortly. Please wait for the teacher to start.</p>
           </div>;
         case 'MAIN_SESSION':
-          return <MainSessionView classDetails={classDetails} />;
+          return (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-slate-900">Main Session</h2>
+                <button
+                  onClick={() => setShowVideo(!showVideo)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  {showVideo ? 'Hide Video' : 'Show Video'}
+                </button>
+              </div>
+              <p className="text-slate-600">Welcome to the main session. The teacher will guide you through the lesson.</p>
+              
+              {showVideo && (
+                <div className="bg-slate-900 rounded-lg overflow-hidden">
+                  <JitsiVideo
+                    roomName={`bioclass-${classId}`}
+                    displayName={user?.name || 'Anonymous'}
+                    isTeacher={user?.role === 'TEACHER'}
+                  />
+                </div>
+              )}
+              
+              <div className="bg-slate-100 rounded-lg p-8 text-center">
+                <p className="text-slate-500">Main session content will appear here</p>
+              </div>
+            </div>
+          );
         case 'GROUP_SESSION':
           return <GroupSessionView classDetails={classDetails} student={student!} />;
         case 'POSTTEST':
@@ -169,12 +260,39 @@ const ClassroomPage: React.FC = () => {
     }
 
     // Teacher View
-    if (user?.role === 'TEACHER') {
+    if (user && user.role === 'TEACHER') {
       switch(classStatus) {
         case 'GROUP_SESSION':
             return <TeacherGroupMonitorView classDetails={classDetails} />;
         default: // Covers WAITING, MAIN_SESSION, POSTTEST, ENDED
-            return <MainSessionView classDetails={classDetails} />;
+            return (
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-2xl font-bold text-slate-900">Main Session</h2>
+                  <button
+                    onClick={() => setShowVideo(!showVideo)}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    {showVideo ? 'Hide Video' : 'Show Video'}
+                  </button>
+                </div>
+                <p className="text-slate-600">Welcome to the main session. You are now in control of the lesson.</p>
+                
+                {showVideo && (
+                  <div className="bg-slate-900 rounded-lg overflow-hidden">
+                    <JitsiVideo
+                      roomName={`bioclass-${classId}`}
+                      displayName={user?.name || 'Teacher'}
+                      isTeacher={true}
+                    />
+                  </div>
+                )}
+                
+                <div className="bg-slate-100 rounded-lg p-8 text-center">
+                  <p className="text-slate-500">Main session content will appear here</p>
+                </div>
+              </div>
+            );
       }
     }
 
@@ -184,7 +302,15 @@ const ClassroomPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col">
       <Header title={classDetails?.name || 'Classroom'} />
-      {user?.role === 'TEACHER' && <div className="container mx-auto p-4 flex justify-end"><TeacherControls /></div>}
+      {user && user.role === 'TEACHER' && 
+        <div className="container mx-auto p-4 flex justify-end items-center">
+          <div className="flex items-center space-x-2 text-slate-600 mr-4">
+            <Users className="w-4 h-4" />
+            <span>{onlineUsers.length} online</span>
+          </div>
+          <TeacherControls />
+        </div>
+      }
       <main className="container mx-auto p-4 pt-0 flex-grow flex flex-col">
           {renderContent()}
       </main>

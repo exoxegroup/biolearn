@@ -4,18 +4,17 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { Spinner } from '../../components/common/Spinner';
 import { ArrowLeft } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
     try {
       const user = await login(email, password);
@@ -27,10 +26,10 @@ const LoginPage: React.FC = () => {
           navigate(targetDashboard);
         }
       } else {
-        setError('Invalid credentials. Please try again.');
+        toast.error('Invalid credentials. Please check your email and password.');
       }
     } catch (err) {
-      setError('An error occurred. Please try again later.');
+      toast.error('An error occurred. Please try again later.');
     } finally {
       setLoading(false);
     }
@@ -47,7 +46,7 @@ const LoginPage: React.FC = () => {
           <p className="mt-2 text-slate-600">Welcome back! Please sign in to your account.</p>
         </div>
         
-        {error && <div className="bg-red-100 text-red-700 p-3 rounded-lg text-sm">{error}</div>}
+
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
