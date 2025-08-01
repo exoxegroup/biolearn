@@ -85,7 +85,8 @@ const Chat: React.FC<ChatProps> = ({ isAIAssistant, classId, groupId }) => {
     }
 
     // Initialize socket connection
-    const newSocket = io('http://localhost:3001', {
+    const backendUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+    const newSocket = io(backendUrl, {
       auth: { token: token || '' }
     });
 
