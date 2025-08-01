@@ -49,9 +49,9 @@ const GroupSessionView: React.FC<{ classDetails: ClassDetails; student: Enrolled
           <button onClick={() => setActiveTab('ai')} className={`flex-1 p-3 font-semibold ${activeTab === 'ai' ? 'border-b-2 border-teal-600 text-teal-600' : 'text-slate-500 hover:bg-slate-50'}`}>AI Assistant</button>
         </div>
         <div className="flex-grow flex flex-col overflow-hidden">
-            {activeTab === 'chat' && <Chat isAIAssistant={false} key={`chat-${student.groupNumber}`} />}
+            {activeTab === 'chat' && <Chat isAIAssistant={false} classId={classDetails.id} groupId={student.groupNumber} key={`chat-${student.groupNumber}`} />}
             {activeTab === 'notes' && <SharedNotes classId={classDetails.id} groupId={student.groupNumber} key={`notes-${student.groupNumber}`} />}
-            {activeTab === 'ai' && <AIAssistant key={`ai-${student.groupNumber}`} />}
+            {activeTab === 'ai' && <AIAssistant key={`ai-${student.groupNumber}`} classId={classDetails.id} groupId={student.groupNumber} />}
         </div>
       </div>
     </div>

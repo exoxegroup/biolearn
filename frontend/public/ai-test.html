@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Test - Gemini Verification</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .input-section {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            resize: vertical;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .response-section {
+            margin-top: 20px;
+        }
+        .response-box {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 15px;
+            min-height: 100px;
+        }
+        .loading {
+            text-align: center;
+            color: #666;
+        }
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .success {
+            color: #155724;
+            background: #d4edda;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Gemini AI Test</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 20px;">
+            Test Gemini AI functionality without authentication restrictions
+        </p>
+        
+        <div class="input-section">
+            <label for="prompt">Enter your prompt:</label>
+            <textarea id="prompt" placeholder="Ask me anything about biology, science, or education...">Explain photosynthesis in simple terms</textarea>
+        </div>
+        
+        <button id="testButton" onclick="testAI()">Test AI Response</button>
+        
+        <div class="response-section">
+            <label>AI Response:</label>
+            <div id="response" class="response-box">
+                <div class="loading">Click "Test AI Response" to see the AI in action</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function testAI() {
+            const prompt = document.getElementById('prompt').value;
+            const button = document.getElementById('testButton');
+            const responseDiv = document.getElementById('response');
+            
+            if (!prompt.trim()) {
+                responseDiv.innerHTML = '<div class="error">Please enter a prompt</div>';
+                return;
+            }
+            
+            button.disabled = true;
+            button.textContent = 'Testing...';
+            responseDiv.innerHTML = '<div class="loading">🔄 Connecting to Gemini AI...</div>';
+            
+            try {
+                const response = await fetch('http://localhost:3001/api/ai/test', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        prompt: prompt
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    responseDiv.innerHTML = `
+                        <div class="success">✅ AI Response Received</div>
+                        <div style="margin-top: 10px; white-space: pre-wrap;">${data.response}</div>
+                    `;
+                } else {
+                    responseDiv.innerHTML = `
+                        <div class="error">❌ Error: ${data.error || 'Unknown error'}</div>
+                        <div style="margin-top: 5px; font-size: 12px; color: #666;">
+                            Status: ${response.status} ${response.statusText}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                responseDiv.innerHTML = `
+                    <div class="error">❌ Connection Error</div>
+                    <div style="margin-top: 5px; font-size: 12px; color: #666;">
+                        ${error.message}<br>
+                        Make sure the backend server is running on http://localhost:3001
+                    </div>
+                `;
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Test AI Response';
+            }
+        }
+        
+        // Test on page load
+        window.addEventListener('load', () => {
+            // Auto-test with default prompt
+            setTimeout(testAI, 1000);
+        });
+    </script>
+</body>
+</html>

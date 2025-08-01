@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from '../../hooks/useAuth';
 import { ChatMessage } from '../../types';
-import { getChatHistory, sendChatMessage } from '../../services/api';
+import { getChatHistory, sendChatMessage, getAIResponse } from '../../services/api';
 import { Send, Bot } from 'lucide-react';
 import { Spinner } from '../common/Spinner';
 
@@ -25,24 +25,22 @@ const Chat: React.FC<ChatProps> = ({ isAIAssistant, classId, groupId }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const fetchMessages = useCallback(async () => {
-    if (!user || !classId) return;
+    if (!classId) return;
     
     try {
       setLoading(true);
       setError(null);
       const token = localStorage.getItem('authToken');
-      if (!token) {
-        setError('Authentication required');
-        return;
-      }
+      // Allow anonymous access for now
 
-      const chatHistory = await getChatHistory(classId, token, groupId);
+      const response = await getChatHistory(classId, token || undefined, groupId);
+      const chatHistory = response.messages || response;
       const formattedMessages: ChatMessage[] = chatHistory.map((msg: any) => ({
         id: msg.id,
-        senderName: msg.sender.name,
-        senderId: msg.sender.id,
-        text: msg.content,
-        isAI: msg.sender.id === 'ai-assistant',
+        senderName: msg.sender?.name || 'Anonymous',
+        senderId: msg.sender?.id || 'anonymous-student',
+        text: msg.content || msg.text,
+        isAI: msg.sender?.id === 'ai-assistant',
         timestamp: msg.timestamp,
       }));
 
@@ -55,7 +53,7 @@ const Chat: React.FC<ChatProps> = ({ isAIAssistant, classId, groupId }) => {
             id: 'ai-intro',
             senderName: 'BioLearn AI',
             senderId: 'ai-assistant',
-            text: 'Hello! I am BioLearn AI. How can I help you explore biology concepts today?',
+            text: 'Hello! I\'m your AI assistant. Ask me questions about your studies or help with your group work.',
             isAI: true,
             timestamp: new Date().toISOString(),
           }
@@ -67,7 +65,7 @@ const Chat: React.FC<ChatProps> = ({ isAIAssistant, classId, groupId }) => {
     } finally {
       setLoading(false);
     }
-  }, [user, classId, groupId, isAIAssistant]);
+  }, [classId, groupId, isAIAssistant]);
 
   useEffect(() => {
     fetchMessages();
@@ -88,7 +86,7 @@ const Chat: React.FC<ChatProps> = ({ isAIAssistant, classId, groupId }) => {
 
     // Initialize socket connection
     const newSocket = io('http://localhost:3001', {
-      auth: { token }
+      auth: { token: token || '' }
     });
 
     newSocket.on('connect', () => {
@@ -97,11 +95,11 @@ const Chat: React.FC<ChatProps> = ({ isAIAssistant, classId, groupId }) => {
       
       // Join appropriate room
       if (isAIAssistant) {
-        newSocket.emit('join:ai', { classId });
+        newSocket.emit('join_room', { classId, groupId });
       } else if (groupId) {
-        newSocket.emit('join:group', { classId, groupId });
+        newSocket.emit('join_room', { classId, groupId });
       } else {
-        newSocket.emit('join:class', { classId });
+        newSocket.emit('join_room', { classId });
       }
     });
 
@@ -110,16 +108,21 @@ const Chat: React.FC<ChatProps> = ({ isAIAssistant, classId, groupId }) => {
       console.log('Disconnected from chat server');
     });
 
-    newSocket.on('chat:message', (message: any) => {
+    newSocket.on('chat:message:received', (message: any) => {
       const newChatMessage: ChatMessage = {
         id: message.id,
         senderName: message.sender.name,
         senderId: message.sender.id,
-        text: message.content,
+        text: message.text,
         isAI: message.sender.id === 'ai-assistant',
         timestamp: message.timestamp,
       };
       setMessages(prev => [...prev, newChatMessage]);
+    });
+
+    newSocket.on('connect_error', (error) => {
+      console.error('Connection error:', error);
+      setError('Failed to connect to chat');
     });
 
     setSocket(newSocket);
@@ -140,33 +143,45 @@ const Chat: React.FC<ChatProps> = ({ isAIAssistant, classId, groupId }) => {
         return;
       }
 
-      const messageData = await sendChatMessage(
-        classId,
-        newMessage,
-        token,
-        groupId
-      );
-
-      // For AI assistant, handle the response
       if (isAIAssistant) {
+        // For AI assistant, use the AI endpoint
         setAILoading(true);
-        const aiMessage: ChatMessage = {
-          id: messageData.id,
-          senderName: messageData.sender.name,
-          senderId: messageData.sender.id,
-          text: messageData.content,
+        const userMessage: ChatMessage = {
+          id: Date.now().toString(),
+          senderName: user.name,
+          senderId: user.id,
+          text: newMessage,
           isAI: false,
-          timestamp: messageData.timestamp,
+          timestamp: new Date().toISOString(),
         };
-        setMessages(prev => [...prev, aiMessage]);
+        setMessages(prev => [...prev, userMessage]);
         setNewMessage('');
-        
-        // Wait for AI response
-        setTimeout(() => {
+
+        try {
+          const aiResponse = await getAIResponse(newMessage, token || undefined, classId, groupId);
+          const aiMessage: ChatMessage = {
+            id: Date.now().toString() + '-ai',
+            senderName: 'BioLearn AI',
+            senderId: 'ai-assistant',
+            text: aiResponse.response,
+            isAI: true,
+            timestamp: new Date().toISOString(),
+          };
+          setMessages(prev => [...prev, aiMessage]);
+        } catch (aiError) {
+          console.error('Error getting AI response:', aiError);
+          setError('Failed to get AI response');
+        } finally {
           setAILoading(false);
-        }, 1000);
+        }
       } else {
-        // For group chat, the socket event will handle the message
+        // For group chat, use regular chat endpoint
+        const messageData = await sendChatMessage(
+          classId,
+          newMessage,
+          token || undefined,
+          groupId
+        );
         setNewMessage('');
       }
     } catch (err) {

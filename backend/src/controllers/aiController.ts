@@ -21,18 +21,15 @@ export const getAIResponse = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Prompt is required' });
     }
 
-    if (!req.user) {
-      return res.status(401).json({ error: 'User not authenticated' });
-    }
-
     // Build context for the AI
     let fullContext = '';
     if (context) {
       fullContext += `Context: ${context}\n\n`;
     }
     
-    // Add user role context
-    fullContext += `User is a ${req.user.role.toLowerCase()} in this educational platform. `;
+    // Add user role context using authenticated user
+    const userRole = req.user!.role.toLowerCase();
+    fullContext += `User is a ${userRole} in this educational platform. `;
     
     // Add educational focus
     fullContext += `Please provide helpful, educational responses appropriate for a classroom setting. `;
@@ -56,7 +53,7 @@ export const getAIResponse = async (req: AuthRequest, res: Response) => {
         data: {
           classId: req.body.classId || 'global',
           groupId: req.body.groupId || null,
-          senderId: req.user.id,
+          senderId: req.user!.id,
           text: prompt,
           isAI: true,
           timestamp: new Date()

@@ -13,6 +13,7 @@ import materialRoutes from './routes/materialRoutes';
 import quizRoutes from './routes/quizRoutes';
 import groupRoutes from './routes/groupRoutes';
 import aiRoutes from './routes/aiRoutes';
+import aiTestRoutes from './routes/ai-test-routes';
 import chatRoutes from './routes/chatRoutes';
 import { PrismaClient } from '@prisma/client';
 
@@ -334,8 +335,12 @@ app.use('/api/enrollments', enrollmentRoutes);
 app.use('/api/materials', materialRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api', groupRoutes);
+app.use('/api', aiTestRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/chat', chatRoutes);
+
+// Make io accessible to routes
+app.set('io', io);
 
 const PORT = process.env.BACKEND_PORT || 3001;
 

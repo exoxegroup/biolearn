@@ -268,39 +268,50 @@ export const getGroupAssignments = async (classId: string, token: string) => {
 };
 
 // AI Assistant API
-export const getAIResponse = async (prompt: string, token: string) => {
+export const getAIResponse = async (prompt: string, token?: string, classId?: string, groupId?: number) => {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  
+  // Only add authorization header if token is provided
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
   const response = await fetch(`${BASE_URL}/ai/ask`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify({ prompt }),
+    headers,
+    body: JSON.stringify({ prompt, classId, groupId }),
   });
   return handleResponse(response);
 };
 
 // Chat APIs
-export const getChatHistory = async (classId: string, token: string, groupId?: number) => {
+export const getChatHistory = async (classId: string, token?: string, groupId?: number) => {
   const url = groupId 
     ? `${BASE_URL}/chat/history?classId=${classId}&groupId=${groupId}`
     : `${BASE_URL}/chat/history?classId=${classId}`;
   
-  const response = await fetch(url, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
-  });
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
+  const response = await fetch(url, { headers });
   return handleResponse(response);
 };
 
-export const sendChatMessage = async (classId: string, text: string, token: string, groupId?: number) => {
-  const response = await fetch(`${BASE_URL}/chat/send`, {
+export const sendChatMessage = async (classId: string, text: string, token?: string, groupId?: number) => {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
+  const response = await fetch(`${BASE_URL}/chat/message`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
+    headers,
     body: JSON.stringify({ classId, text, groupId }),
   });
   return handleResponse(response);

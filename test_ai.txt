@@ -1,0 +1,11 @@
+- Health Check : GET http://localhost:3001/api/ai/health ✅
+- AI Test : POST http://localhost:3001/api/ai/test ✅
+- Sample Test : Successfully received AI response to "Hello, are you working?"
+### 🔗 Access URLs
+- Test Page : http://localhost:5174/ai-test.html
+- Health API : http://localhost:3001/api/ai/health
+- Test API : http://localhost:3001/api/ai/test
+The AI service is confirmed to be working correctly. You can now test Gemini AI in isolation by visiting the test page and entering prompts in the text area. This will help determine if any remaining issues are related to authentication or other parts of the system.
+
+
+Invoke-RestMethod -Uri http://localhost:3001/api/ai/test -Method POST -Body '{"prompt":"Are you working?"}' -ContentType "application/json" 

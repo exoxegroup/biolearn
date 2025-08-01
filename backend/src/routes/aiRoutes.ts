@@ -4,7 +4,7 @@ import { protect } from '../middleware/authMiddleware';
 
 const router = express.Router();
 
-// All AI routes require authentication
+// Enable JWT authentication for AI endpoint
 router.use(protect);
 
 // POST /api/ai/ask - Get AI response for a prompt

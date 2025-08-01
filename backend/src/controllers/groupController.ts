@@ -189,3 +189,146 @@ export const getGroupAssignments = async (req: AuthRequest, res: Response) => {
     });
   }
 };
+
+// Get group notes
+export const getGroupNotes = async (req: AuthRequest, res: Response) => {
+  try {
+    const { classId, groupId } = req.params;
+
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not authenticated',
+      });
+    }
+
+    // Verify the teacher owns this class or student is enrolled and in the group
+    const classExists = await prisma.class.findFirst({
+      where: {
+        id: classId,
+        OR: [
+          { teacherId: req.user.id },
+          {
+            enrollments: {
+              some: {
+                studentId: req.user.id,
+                groupNumber: parseInt(groupId),
+              },
+            },
+          },
+        ],
+      },
+    });
+
+    if (!classExists) {
+      return res.status(404).json({
+        success: false,
+        message: 'Class not found or you do not have access to this group',
+      });
+    }
+
+    // Find or create group notes
+    let groupNotes = await prisma.groupNote.findUnique({
+      where: {
+        classId_groupId: {
+          classId,
+          groupId: parseInt(groupId),
+        },
+      },
+    });
+
+    // Create if doesn't exist
+    if (!groupNotes) {
+      groupNotes = await prisma.groupNote.create({
+        data: {
+          classId,
+          groupId: parseInt(groupId),
+          content: '',
+        },
+      });
+    }
+
+    res.json({
+      success: true,
+      content: groupNotes.content || '',
+    });
+  } catch (error) {
+    console.error('Error fetching group notes:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch group notes',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+};
+
+// Update group notes
+export const updateGroupNotes = async (req: AuthRequest, res: Response) => {
+  try {
+    const { classId, groupId } = req.params;
+    const { content } = req.body;
+
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not authenticated',
+      });
+    }
+
+    // Verify the teacher owns this class or student is enrolled and in the group
+    const classExists = await prisma.class.findFirst({
+      where: {
+        id: classId,
+        OR: [
+          { teacherId: req.user.id },
+          {
+            enrollments: {
+              some: {
+                studentId: req.user.id,
+                groupNumber: parseInt(groupId),
+              },
+            },
+          },
+        ],
+      },
+    });
+
+    if (!classExists) {
+      return res.status(404).json({
+        success: false,
+        message: 'Class not found or you do not have access to this group',
+      });
+    }
+
+    // Update or create group notes
+    const groupNotes = await prisma.groupNote.upsert({
+      where: {
+        classId_groupId: {
+          classId,
+          groupId: parseInt(groupId),
+        },
+      },
+      update: {
+        content: content || '',
+      },
+      create: {
+        classId,
+        groupId: parseInt(groupId),
+        content: content || '',
+      },
+    });
+
+    res.json({
+      success: true,
+      message: 'Group notes updated successfully',
+      content: groupNotes.content,
+    });
+  } catch (error) {
+    console.error('Error updating group notes:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update group notes',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+};

@@ -4,7 +4,7 @@ import { protect } from '../middleware/authMiddleware';
 
 const router = express.Router();
 
-// All chat routes require authentication
+// Enable JWT authentication for chat endpoints
 router.use(protect);
 
 // GET /api/chat/history - Get chat history for a class/group

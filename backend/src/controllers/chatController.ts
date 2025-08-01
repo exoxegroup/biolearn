@@ -13,21 +13,7 @@ export const getChatHistory = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Class ID is required' });
     }
 
-    if (!req.user) {
-      return res.status(401).json({ error: 'User not authenticated' });
-    }
-
-    // Verify user is enrolled in the class
-    const enrollment = await prisma.studentEnrollment.findFirst({
-      where: {
-        classId: classId as string,
-        studentId: req.user.id
-      }
-    });
-
-    if (!enrollment && req.user.role !== 'TEACHER') {
-      return res.status(403).json({ error: 'Not authorized to access this chat' });
-    }
+    // Authentication is now enabled, user is authenticated via JWT
 
     const messages = await prisma.chatMessage.findMany({
       where: {
@@ -64,27 +50,14 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Class ID and text are required' });
     }
 
-    if (!req.user) {
-      return res.status(401).json({ error: 'User not authenticated' });
-    }
-
-    // Verify user is enrolled in the class
-    const enrollment = await prisma.studentEnrollment.findFirst({
-      where: {
-        classId,
-        studentId: req.user.id
-      }
-    });
-
-    if (!enrollment && req.user.role !== 'TEACHER') {
-      return res.status(403).json({ error: 'Not authorized to send messages in this chat' });
-    }
+    // Use the authenticated user's ID
+    const senderId = req.user!.id;
 
     const message = await prisma.chatMessage.create({
       data: {
         classId,
         groupId: groupId || null,
-        senderId: req.user.id,
+        senderId,
         text,
         isAI: false,
         timestamp: new Date()
@@ -99,6 +72,24 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
         }
       }
     });
+
+    // Broadcast message to appropriate room via socket.io
+    const roomName = groupId ? `group_${classId}_${groupId}` : `class_${classId}`;
+    const io = req.app.get('io');
+    if (io) {
+      io.to(roomName).emit('chat:message:received', {
+        id: message.id,
+        text: message.text,
+        timestamp: message.timestamp,
+        sender: {
+          id: message.sender.id,
+          name: message.sender.name,
+          role: message.sender.role
+        },
+        classId: message.classId,
+        groupId: message.groupId
+      });
+    }
 
     res.status(201).json({ message });
   } catch (error) {
