@@ -24,7 +24,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.NEXTAUTH_URL || 'http://localhost:5173',
+    origin: ['https://biolearn.onrender.com', 'http://localhost:5173'],
     methods: ["GET", "POST"]
   }
 });
@@ -32,7 +32,7 @@ const io = new Server(server, {
 const prisma = new PrismaClient();
 
 app.use(cors({
-  origin: process.env.NEXTAUTH_URL || 'http://localhost:5173'
+  origin: ['https://biolearn.onrender.com', 'http://localhost:5173']
 }));
 
 app.use(express.json());
