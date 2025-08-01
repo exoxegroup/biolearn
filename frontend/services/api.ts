@@ -1,6 +1,6 @@
 import { User, UserRole, Gender } from '../types';
 
-const BASE_URL = 'http://localhost:3001/api'; // Your backend server URL
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'; // Your backend server URL
 
 interface ApiError {
   message: string;
@@ -16,7 +16,7 @@ const handleResponse = async (response: Response) => {
 };
 
 export const registerUser = async (userData: { name: string; email: string; password: string; role: UserRole, gender: Gender }) => {
-  const response = await fetch(`${BASE_URL}/auth/register`, {
+  const response = await fetch(`${API_URL}/auth/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -27,7 +27,7 @@ export const registerUser = async (userData: { name: string; email: string; pass
 };
 
 export const loginUser = async (credentials: { email: string; password: string }): Promise<{ token: string; user: User }> => {
-  const response = await fetch(`${BASE_URL}/auth/login`, {
+  const response = await fetch(`${API_URL}/auth/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -38,7 +38,7 @@ export const loginUser = async (credentials: { email: string; password: string }
 };
 
 export const getCurrentUser = async (token: string): Promise<User> => {
-  const response = await fetch(`${BASE_URL}/auth/me`, {
+  const response = await fetch(`${API_URL}/auth/me`, {
     headers: {
       'Authorization': `Bearer ${token}`,
     },
@@ -50,7 +50,7 @@ export const updateUserProfile = async (
   profileData: { phone: string; address: string },
   token: string
 ): Promise<User> => {
-  const response = await fetch(`${BASE_URL}/users/profile`, {
+  const response = await fetch(`${API_URL}/users/profile`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -64,7 +64,7 @@ export const updateUserProfile = async (
 import { ClassSummary } from '../types';
 
 export const createClass = async (className: string, token: string): Promise<ClassSummary> => {
-  const response = await fetch(`${BASE_URL}/classes`, {
+  const response = await fetch(`${API_URL}/classes`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -89,7 +89,7 @@ export const createClass = async (className: string, token: string): Promise<Cla
 };
 
 export const getTeacherClasses = async (token: string): Promise<ClassSummary[]> => {
-  const response = await fetch(`${BASE_URL}/classes`, {
+  const response = await fetch(`${API_URL}/classes`, {
     headers: {
       'Authorization': `Bearer ${token}`,
     },
@@ -105,7 +105,7 @@ export const getTeacherClasses = async (token: string): Promise<ClassSummary[]> 
 };
 
 export const getClassMaterials = async (classId: string, token: string) => {
-  const response = await fetch(`${BASE_URL}/materials/${classId}`, {
+  const response = await fetch(`${API_URL}/materials/${classId}`, {
     headers: {
       'Authorization': `Bearer ${token}`,
     },
@@ -114,7 +114,7 @@ export const getClassMaterials = async (classId: string, token: string) => {
 };
 
 export const addMaterial = async (classId: string, formData: FormData, token: string) => {
-  const response = await fetch(`${BASE_URL}/materials/${classId}`, {
+  const response = await fetch(`${API_URL}/materials/${classId}`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -125,7 +125,7 @@ export const addMaterial = async (classId: string, formData: FormData, token: st
 };
 
 export const deleteMaterial = async (materialId: string, token: string) => {
-  const response = await fetch(`${BASE_URL}/materials/${materialId}`, {
+  const response = await fetch(`${API_URL}/materials/${materialId}`, {
     method: 'DELETE',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -135,7 +135,7 @@ export const deleteMaterial = async (materialId: string, token: string) => {
 };
 
 export const getClassDetails = async (classId: string, token: string) => {
-  const response = await fetch(`${BASE_URL}/classes/${classId}`, {
+  const response = await fetch(`${API_URL}/classes/${classId}`, {
     headers: {
       'Authorization': `Bearer ${token}`,
     },
@@ -144,7 +144,7 @@ export const getClassDetails = async (classId: string, token: string) => {
 };
 
 export const getStudentClasses = async (token: string): Promise<ClassSummary[]> => {
-  const response = await fetch(`${BASE_URL}/enrollments/student`, {
+  const response = await fetch(`${API_URL}/enrollments/student`, {
     headers: {
       'Authorization': `Bearer ${token}`,
     },
@@ -160,7 +160,7 @@ export const getStudentClasses = async (token: string): Promise<ClassSummary[]> 
 };
 
 export const enrollInClass = async (classCode: string, token: string) => {
-  const response = await fetch(`${BASE_URL}/enrollments`, {
+  const response = await fetch(`${API_URL}/enrollments`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -172,7 +172,7 @@ export const enrollInClass = async (classCode: string, token: string) => {
 };
 
 export const submitPretest = async (classId: string, answers: (number | null)[], token: string) => {
-  const response = await fetch(`${BASE_URL}/quizzes/pretest`, {
+  const response = await fetch(`${API_URL}/quizzes/pretest`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -194,7 +194,7 @@ export const updateQuiz = async (classId: string, quizData: {
   }>;
   quizType: 'PRETEST' | 'POSTTEST';
 }, token: string) => {
-  const response = await fetch(`${BASE_URL}/quizzes/classes/${classId}/quiz`, {
+  const response = await fetch(`${API_URL}/quizzes/classes/${classId}/quiz`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -206,7 +206,7 @@ export const updateQuiz = async (classId: string, quizData: {
 };
 
 export const getQuiz = async (classId: string, quizType: 'PRETEST' | 'POSTTEST', token: string) => {
-  const response = await fetch(`${BASE_URL}/quizzes/classes/${classId}/quiz?type=${quizType}`, {
+  const response = await fetch(`${API_URL}/quizzes/classes/${classId}/quiz?type=${quizType}`, {
     headers: {
       'Authorization': `Bearer ${token}`,
     },
@@ -215,7 +215,7 @@ export const getQuiz = async (classId: string, quizType: 'PRETEST' | 'POSTTEST',
 };
 
 export const getQuizWithAnswers = async (classId: string, quizType: 'PRETEST' | 'POSTTEST', token: string) => {
-  const response = await fetch(`${BASE_URL}/quizzes/classes/${classId}/quiz/answers?type=${quizType}`, {
+  const response = await fetch(`${API_URL}/quizzes/classes/${classId}/quiz/answers?type=${quizType}`, {
     headers: {
       'Authorization': `Bearer ${token}`,
     },
@@ -224,7 +224,7 @@ export const getQuizWithAnswers = async (classId: string, quizType: 'PRETEST' | 
 };
 
 export const deleteQuiz = async (classId: string, quizType: 'PRETEST' | 'POSTTEST', token: string) => {
-  const response = await fetch(`${BASE_URL}/quizzes/classes/${classId}/quiz?type=${quizType}`, {
+  const response = await fetch(`${API_URL}/quizzes/classes/${classId}/quiz?type=${quizType}`, {
     method: 'DELETE',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -234,7 +234,7 @@ export const deleteQuiz = async (classId: string, quizType: 'PRETEST' | 'POSTTES
 };
 
 export const submitQuiz = async (classId: string, answers: number[], quizType: 'PRETEST' | 'POSTTEST', token: string) => {
-  const response = await fetch(`${BASE_URL}/quizzes/classes/${classId}/quiz/submit`, {
+  const response = await fetch(`${API_URL}/quizzes/classes/${classId}/quiz/submit`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -247,7 +247,7 @@ export const submitQuiz = async (classId: string, answers: number[], quizType: '
 
 // Group Management APIs
 export const assignStudentsToGroups = async (classId: string, assignments: { studentId: string, groupNumber: number | null }[], token: string) => {
-  const response = await fetch(`${BASE_URL}/classes/${classId}/groups`, {
+  const response = await fetch(`${API_URL}/classes/${classId}/groups`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -259,7 +259,7 @@ export const assignStudentsToGroups = async (classId: string, assignments: { stu
 };
 
 export const getGroupAssignments = async (classId: string, token: string) => {
-  const response = await fetch(`${BASE_URL}/groups/${classId}`, {
+  const response = await fetch(`${API_URL}/groups/${classId}`, {
     headers: {
       'Authorization': `Bearer ${token}`,
     },
@@ -278,7 +278,7 @@ export const getAIResponse = async (prompt: string, token?: string, classId?: st
     headers['Authorization'] = `Bearer ${token}`;
   }
   
-  const response = await fetch(`${BASE_URL}/ai/ask`, {
+  const response = await fetch(`${API_URL}/ai/ask`, {
     method: 'POST',
     headers,
     body: JSON.stringify({ prompt, classId, groupId }),
@@ -289,8 +289,8 @@ export const getAIResponse = async (prompt: string, token?: string, classId?: st
 // Chat APIs
 export const getChatHistory = async (classId: string, token?: string, groupId?: number) => {
   const url = groupId 
-    ? `${BASE_URL}/chat/history?classId=${classId}&groupId=${groupId}`
-    : `${BASE_URL}/chat/history?classId=${classId}`;
+    ? `${API_URL}/chat/history?classId=${classId}&groupId=${groupId}`
+    : `${API_URL}/chat/history?classId=${classId}`;
   
   const headers: Record<string, string> = {};
   if (token) {
@@ -309,7 +309,7 @@ export const sendChatMessage = async (classId: string, text: string, token?: str
     headers['Authorization'] = `Bearer ${token}`;
   }
   
-  const response = await fetch(`${BASE_URL}/chat/message`, {
+  const response = await fetch(`${API_URL}/chat/message`, {
     method: 'POST',
     headers,
     body: JSON.stringify({ classId, text, groupId }),
@@ -318,7 +318,7 @@ export const sendChatMessage = async (classId: string, text: string, token?: str
 };
 
 export const deleteChatMessage = async (messageId: string, token: string) => {
-  const response = await fetch(`${BASE_URL}/chat/messages/${messageId}`, {
+  const response = await fetch(`${API_URL}/chat/messages/${messageId}`, {
     method: 'DELETE',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -329,7 +329,7 @@ export const deleteChatMessage = async (messageId: string, token: string) => {
 
 // Group Notes APIs
 export const getGroupNotes = async (classId: string, groupId: number, token: string) => {
-  const response = await fetch(`${BASE_URL}/groups/${classId}/${groupId}/notes`, {
+  const response = await fetch(`${API_URL}/groups/${classId}/${groupId}/notes`, {
     headers: {
       'Authorization': `Bearer ${token}`,
     },
@@ -338,7 +338,7 @@ export const getGroupNotes = async (classId: string, groupId: number, token: str
 };
 
 export const updateGroupNotes = async (classId: string, groupId: number, content: string, token: string) => {
-  const response = await fetch(`${BASE_URL}/groups/${classId}/${groupId}/notes`, {
+  const response = await fetch(`${API_URL}/groups/${classId}/${groupId}/notes`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
