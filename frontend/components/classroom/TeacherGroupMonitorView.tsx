@@ -46,7 +46,7 @@ const TeacherGroupMonitorView: React.FC<{ classDetails: ClassDetails }> = ({ cla
             </div>
             <div className="bg-white rounded-lg shadow-md flex-grow flex flex-col">
                 <h3 className="p-4 border-b font-bold text-lg">Group {selectedGroup} Chat</h3>
-                <Chat isAIAssistant={false} key={`chat-monitor-${selectedGroup}`} />
+                <Chat isAIAssistant={false} key={`chat-monitor-${selectedGroup}`} classId={classDetails.id} groupId={selectedGroup} />
             </div>
         </div>
     </div>

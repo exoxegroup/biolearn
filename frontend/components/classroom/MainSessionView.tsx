@@ -56,7 +56,7 @@ const MainSessionView: React.FC<{ classDetails: ClassDetails }> = ({ classDetail
                     </div>
                 </div>
                 <div className="bg-white rounded-lg shadow-md flex-grow flex flex-col">
-                    <Chat isAIAssistant={false} />
+                    <Chat isAIAssistant={false} classId={classDetails.id} />
                 </div>
             </div>
         </div>
