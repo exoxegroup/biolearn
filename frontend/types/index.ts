@@ -27,6 +27,10 @@ export interface ClassDetails extends ClassSummary {
     pretest: Quiz;
     posttest: Quiz;
     posttestUsesPretestQuestions: boolean;
+    teacher: {
+        id: string;
+        name: string;
+    };
 }
 
 export interface Material {

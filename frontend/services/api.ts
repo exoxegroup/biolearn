@@ -26,6 +26,31 @@ export const registerUser = async (userData: { name: string; email: string; pass
   return handleResponse(response);
 };
 
+export const updateClass = async (classId: string, name: string, token: string): Promise<ClassSummary> => {
+  const response = await fetch(`${API_URL}/classes/${classId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ name }),
+  });
+  
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Failed to update class name');
+  }
+  
+  const updatedClass = await response.json();
+  return {
+    id: updatedClass.id,
+    name: updatedClass.name,
+    classCode: updatedClass.classCode,
+    teacherName: '',
+    studentCount: updatedClass.studentCount || 0,
+  };
+};
+
 export const loginUser = async (credentials: { email: string; password: string }): Promise<{ token: string; user: User }> => {
   const response = await fetch(`${API_URL}/auth/login`, {
     method: 'POST',
