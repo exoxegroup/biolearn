@@ -76,7 +76,10 @@ const Chat: React.FC<ChatProps> = ({ isAIAssistant, classId, groupId }) => {
   }, [messages, aiLoading]);
 
   useEffect(() => {
-    if (!user || !classId) return;
+    if (!user || !classId) {
+      setError('Authentication required');
+      return;
+    }
     
     const token = localStorage.getItem('authToken');
     if (!token) {
@@ -193,7 +196,7 @@ const Chat: React.FC<ChatProps> = ({ isAIAssistant, classId, groupId }) => {
 
   if (loading) {
     return (
-      <div className="flex-grow flex items-center justify-center">
+      <div className="flex-grow flex items-center justify-center h-full">
         <Spinner />
       </div>
     );
@@ -201,8 +204,19 @@ const Chat: React.FC<ChatProps> = ({ isAIAssistant, classId, groupId }) => {
 
   if (error) {
     return (
-      <div className="flex-grow flex items-center justify-center">
+      <div className="flex-grow flex items-center justify-center h-full">
         <p className="text-red-500">{error}</p>
+      </div>
+    );
+  }
+
+  if (!user || !classId) {
+    return (
+      <div className="flex-grow flex items-center justify-center h-full p-4">
+        <div className="text-center">
+          <p className="text-slate-500 mb-2">Authentication Required</p>
+          <p className="text-sm text-slate-400">Please log in to use the chat</p>
+        </div>
       </div>
     );
   }

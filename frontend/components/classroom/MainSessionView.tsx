@@ -32,31 +32,70 @@ const MainSessionView: React.FC<{ classDetails: ClassDetails }> = ({ classDetail
     const isTeacher = user?.role === 'TEACHER';
 
     return (
-        <div className="flex-grow grid grid-cols-1 lg:grid-cols-3 gap-4 h-full">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 p-4 min-h-screen">
             {/* Left Panel: Video & Materials */}
             <div className="lg:col-span-2 flex flex-col gap-4">
-                <div className="bg-black rounded-lg aspect-video flex items-center justify-center text-white">
-                    {/* Jitsi video feed would be embedded here */}
-                    <p>Main Classroom Video Feed</p>
+                <div className="bg-white rounded-lg shadow-md p-4">
+                    <h3 className="text-lg font-bold text-slate-800 mb-3">Live Video</h3>
+                    <div className="bg-black rounded-lg aspect-video flex items-center justify-center text-white">
+                        {/* Jitsi video feed would be embedded here */}
+                        <p>Main Classroom Video Feed</p>
+                    </div>
                 </div>
-                <div className="bg-white p-4 rounded-lg shadow-md flex-grow">
-                    <h2 className="text-xl font-bold mb-4">Learning Materials</h2>
-                    <div className="space-y-3">
-                        {classDetails.materials.map(mat => <MaterialCard key={mat.id} material={mat} />)}
+                
+                <div className="bg-white rounded-lg shadow-md p-4">
+                    <h3 className="text-lg font-bold text-slate-800 mb-3">Class Materials</h3>
+                    <div className="space-y-2">
+                        {classDetails.materials?.map((material: any) => (
+                            <div key={material.id} className="p-3 bg-slate-50 rounded-md">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-medium text-slate-700">{material.title}</span>
+                                    <a 
+                                        href={material.url} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="text-sm text-blue-600 hover:text-blue-800"
+                                    >
+                                        View
+                                    </a>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
 
-            {/* Right Panel: Students & Chat */}
-            <div className="flex flex-col gap-4 h-[calc(100vh-200px)]">
-                <div className="bg-white p-4 rounded-lg shadow-md">
-                    <h2 className="text-xl font-bold mb-2">Participants ({classDetails.students.length})</h2>
-                    <div className="max-h-48 overflow-y-auto">
+            {/* Middle Panel: Participants */}
+            <div className="lg:col-span-1 flex flex-col gap-4">
+                <div className="bg-white rounded-lg shadow-md p-4">
+                    <h3 className="text-lg font-bold text-slate-800 mb-3">Participants ({classDetails.students.length + 1})</h3>
+                    <div className="space-y-2">
+                        <div className="flex items-center space-x-2 p-2 bg-blue-50 rounded-md">
+                            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                                <span className="text-white text-sm font-bold">
+                                    {classDetails.teacher.name.charAt(0).toUpperCase()}
+                                </span>
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium text-slate-700">{classDetails.teacher.name}</p>
+                                <p className="text-xs text-slate-500">Teacher</p>
+                            </div>
+                        </div>
                         {classDetails.students.map(s => <StudentListItem key={s.id} student={s} />)}
                     </div>
                 </div>
-                <div className="bg-white rounded-lg shadow-md flex-grow flex flex-col">
-                    <Chat isAIAssistant={false} classId={classDetails.id} />
+            </div>
+
+            {/* Right Panel: Main Classroom Chat */}
+            <div className="lg:col-span-1 flex flex-col gap-4 h-full min-h-[400px]">
+                <div className="bg-white rounded-lg shadow-md flex-grow flex flex-col h-full">
+                    <div className="p-3 border-b border-slate-200">
+                        <h3 className="text-lg font-bold text-slate-800">Main Classroom Chat</h3>
+                        <p className="text-sm text-slate-500">All students and teacher</p>
+                    </div>
+                    <div className="flex-grow overflow-hidden h-full">
+                        <Chat isAIAssistant={false} classId={classDetails.id} />
+                    </div>
                 </div>
             </div>
         </div>

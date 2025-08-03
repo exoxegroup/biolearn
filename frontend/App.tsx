@@ -16,6 +16,7 @@ import ManageQuizzesPage from './src/pages/ManageQuizzesPage';
 import ManageStudentsPage from './src/pages/ManageStudentsPage';
 import PerformanceAnalyticsPage from './src/pages/PerformanceAnalyticsPage';
 
+
 function App(): React.ReactNode {
   return (
     <AuthProvider>
@@ -97,6 +98,8 @@ function App(): React.ReactNode {
               </ProtectedRoute>
             } 
           />
+
+
 
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
