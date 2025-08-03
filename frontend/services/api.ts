@@ -100,7 +100,7 @@ export const getTeacherClasses = async (token: string): Promise<ClassSummary[]> 
     name: cls.name,
     classCode: cls.classCode,
     teacherName: '', // Derive or fetch as needed
-    studentCount: 0, // In real app, count enrollments
+    studentCount: cls.studentCount || 0,
   }));
 };
 

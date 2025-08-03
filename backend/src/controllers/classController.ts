@@ -59,8 +59,22 @@ export const getTeacherClasses = async (req: AuthRequest, res: Response) => {
   try {
     const classes = await prisma.class.findMany({
       where: { teacherId: req.user.id },
+      include: {
+        enrollments: true,
+      },
     });
-    res.status(200).json(classes);
+    
+    const classesWithStudentCount = classes.map(cls => ({
+      id: cls.id,
+      name: cls.name,
+      classCode: cls.classCode,
+      teacherId: cls.teacherId,
+      createdAt: cls.createdAt,
+      updatedAt: cls.updatedAt,
+      studentCount: cls.enrollments.length,
+    }));
+    
+    res.status(200).json(classesWithStudentCount);
   } catch (error) {
     console.error('Get classes error:', error);
     res.status(500).json({ message: 'Server error' });

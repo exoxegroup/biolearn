@@ -39,3 +39,18 @@ backend/.env
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Docs folder and test files
+/docs/STATUS.md
+/docs/TRACKER.md
+/docs/TECHNICAL_GUIDES.md
+/docs/PRODUCT_REQUIREMENTS.md
+/docs/IMPLEMENTATION_PLAN.md
+/1.png
+/checker.txt
+/Cloudinary.txt
+/deployment.txt
+/error.txt
+/test_ai.txt
+/test_endpoints.txt
+/test_group_endpoints.txt
