@@ -1,11 +1,14 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { mockGetClassDetails } from '../../services/mockApi';
-import { ClassDetails, EnrolledStudent } from '../../types';
+import { getClassAnalytics } from '../../services/api';
+import { EnrolledStudent } from '../../types';
 import Header from '../../components/common/Header';
 import { Spinner } from '../../components/common/Spinner';
-import { ArrowLeft, TrendingUp, BarChart3, UserCheck, Users, Milestone } from 'lucide-react';
+import { ArrowLeft, TrendingUp, BarChart3, UserCheck, Users, Milestone, Download, FileText, Table } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 const StatCard: React.FC<{ icon: React.ReactNode; title: string; value: React.ReactNode; subtitle: string }> = ({ icon, title, value, subtitle }) => (
     <div className="bg-white p-6 rounded-xl shadow-lg flex items-start gap-4">
@@ -22,61 +25,53 @@ const StatCard: React.FC<{ icon: React.ReactNode; title: string; value: React.Re
 
 const PerformanceAnalyticsPage: React.FC = () => {
     const { classId } = useParams<{ classId: string }>();
-    const [classDetails, setClassDetails] = useState<ClassDetails | null>(null);
+    const [analyticsData, setAnalyticsData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
     useEffect(() => {
-        const fetchDetails = async () => {
+        const fetchAnalytics = async () => {
             if (!classId) return;
             setLoading(true);
             try {
-                const details = await mockGetClassDetails(classId);
-                if (details) {
-                    setClassDetails(details);
-                } else {
-                    setError('Class not found.');
+                const token = localStorage.getItem('authToken');
+                if (!token) {
+                    setError('No authentication token found');
+                    return;
                 }
-            } catch (err) {
-                setError('Failed to load class details.');
+                const data = await getClassAnalytics(classId, token);
+                setAnalyticsData(data);
+            } catch (err: any) {
+                setError(err.message || 'Failed to load analytics data.');
             } finally {
                 setLoading(false);
             }
         };
-        fetchDetails();
+        fetchAnalytics();
     }, [classId]);
     
     const analytics = useMemo(() => {
-        if (!classDetails) return null;
-
-        const scoredStudents = classDetails.students.filter(s => s.pretestScore !== null && s.posttestScore !== null);
-        const maleStudents = scoredStudents.filter(s => s.gender === 'MALE');
-        const femaleStudents = scoredStudents.filter(s => s.gender === 'FEMALE');
-
-        const getAverage = (arr: EnrolledStudent[], key: 'pretestScore' | 'posttestScore'): number => 
-            arr.length > 0 ? arr.reduce((acc, s) => acc + (s[key] ?? 0), 0) / arr.length : 0;
-        
-        const getDelta = (arr: EnrolledStudent[]): number => 
-            arr.length > 0 ? arr.reduce((acc, s) => acc + ((s.posttestScore ?? 0) - (s.pretestScore ?? 0)), 0) / arr.length : 0;
-
+        if (!analyticsData) return null;
         return {
             overall: {
-                avgPre: getAverage(scoredStudents, 'pretestScore'),
-                avgPost: getAverage(scoredStudents, 'posttestScore'),
-                avgDelta: getDelta(scoredStudents),
+                avgPre: analyticsData.overall?.avgPretestScore || 0,
+                avgPost: analyticsData.overall?.avgPosttestScore || 0,
+                avgDelta: analyticsData.overall?.avgScoreImprovement || 0,
             },
             male: {
-                avgPre: getAverage(maleStudents, 'pretestScore'),
-                avgPost: getAverage(maleStudents, 'posttestScore'),
-                avgDelta: getDelta(maleStudents),
+                avgPre: analyticsData.malePerformance?.avgPretestScore || 0,
+                avgPost: analyticsData.malePerformance?.avgPosttestScore || 0,
+                avgDelta: analyticsData.malePerformance?.avgImprovement || 0,
             },
             female: {
-                avgPre: getAverage(femaleStudents, 'pretestScore'),
-                avgPost: getAverage(femaleStudents, 'posttestScore'),
-                avgDelta: getDelta(femaleStudents),
-            }
-        }
-    }, [classDetails]);
+                avgPre: analyticsData.femalePerformance?.avgPretestScore || 0,
+                avgPost: analyticsData.femalePerformance?.avgPosttestScore || 0,
+                avgDelta: analyticsData.femalePerformance?.avgImprovement || 0,
+            },
+            totalStudents: analyticsData.totalStudents || 0,
+            students: analyticsData.detailedStudentScores || []
+        };
+    }, [analyticsData]);
 
     const renderDelta = (delta: number) => {
         const color = delta > 0 ? 'text-green-600' : delta < 0 ? 'text-red-600' : 'text-slate-500';
@@ -84,41 +79,209 @@ const PerformanceAnalyticsPage: React.FC = () => {
         return <span className={`font-bold ${color}`}>{sign}{delta.toFixed(1)}</span>;
     };
 
+    const chartData = useMemo(() => {
+        if (!analytics?.students) return null;
+        
+        const scoredStudents = analytics.students.filter(
+            (s: any) => s.pretestScore !== null && s.posttestScore !== null
+        );
+
+        // Performance trend data
+        const trendData = [
+            { name: 'Pre-Test', overall: analytics.overall.avgPre, male: analytics.male.avgPre, female: analytics.female.avgPre },
+            { name: 'Post-Test', overall: analytics.overall.avgPost, male: analytics.male.avgPost, female: analytics.female.avgPost }
+        ];
+
+        // Score distribution data
+        const scoreRanges = [
+            { range: '0-20', count: 0 },
+            { range: '21-40', count: 0 },
+            { range: '41-60', count: 0 },
+            { range: '61-80', count: 0 },
+            { range: '81-100', count: 0 }
+        ];
+
+        scoredStudents.forEach((student: any) => {
+            const score = student.posttestScore || 0;
+            if (score <= 20) scoreRanges[0].count++;
+            else if (score <= 40) scoreRanges[1].count++;
+            else if (score <= 60) scoreRanges[2].count++;
+            else if (score <= 80) scoreRanges[3].count++;
+            else scoreRanges[4].count++;
+        });
+
+        // Gender performance comparison
+        const genderData = [
+            { name: 'Male', pretest: analytics.male.avgPre, posttest: analytics.male.avgPost, improvement: analytics.male.avgDelta },
+            { name: 'Female', pretest: analytics.female.avgPre, posttest: analytics.female.avgPost, improvement: analytics.female.avgDelta }
+        ];
+
+        return { trendData, scoreRanges, genderData };
+    }, [analytics]);
+
+    const COLORS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#10b981'];
+    const reportRef = useRef<HTMLDivElement>(null);
+
+    const exportToPDF = async () => {
+        if (!reportRef.current) return;
+        
+        try {
+            const canvas = await html2canvas(reportRef.current, {
+                scale: 2,
+                useCORS: true,
+                allowTaint: true
+            });
+            
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const imgWidth = 210;
+            const pageHeight = 295;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            let heightLeft = imgHeight;
+            let position = 0;
+
+            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+
+            while (heightLeft >= 0) {
+                position = heightLeft - imgHeight;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+            }
+
+            pdf.save(`Class_Analytics_Report.pdf`);
+        } catch (error) {
+            console.error('Error exporting PDF:', error);
+            alert('Error generating PDF. Please try again.');
+        }
+    };
+
+    const exportToCSV = () => {
+        if (!analytics || !analytics.students) return;
+
+        const headers = ['Student Name', 'Gender', 'Pre-Test Score', 'Post-Test Score', 'Improvement'];
+        const csvContent = [
+            headers.join(','),
+            ...analytics.students.map((student: any) => [
+                `"${student.name || 'Unknown'}"`,
+                student.gender || 'Unknown',
+                student.pretestScore ?? 'N/A',
+                student.posttestScore ?? 'N/A',
+                student.scoreImprovement !== null 
+                    ? student.scoreImprovement.toFixed(1) 
+                    : 'N/A'
+            ].join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `Class_Analytics_Data.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     if (loading) return <div className="flex h-screen items-center justify-center"><Spinner size="lg" /></div>;
     if (error) return <div className="flex h-screen items-center justify-center text-red-500">{error}</div>;
-    if (!classDetails || !analytics) return null;
+    if (!analyticsData || !analytics) return null;
     
     return (
         <div className="min-h-screen bg-slate-100">
-            <Header title={`Analytics: ${classDetails.name}`} />
+            <Header title="Class Performance Analytics" />
+            <div ref={reportRef}>
             <main className="container mx-auto p-8">
-                <Link to="/teacher-dashboard" className="flex items-center gap-2 text-teal-600 font-semibold mb-6 hover:underline">
-                    <ArrowLeft size={18} />
-                    Back to Dashboard
-                </Link>
+                <div className="flex items-center justify-between mb-6">
+                    <Link to="/teacher-dashboard" className="flex items-center gap-2 text-teal-600 font-semibold hover:underline">
+                        <ArrowLeft size={18} />
+                        Back to Dashboard
+                    </Link>
+                    <div className="flex gap-3">
+                        <button
+                            onClick={exportToCSV}
+                            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                        >
+                            <Table size={18} />
+                            Export CSV
+                        </button>
+                        <button
+                            onClick={exportToPDF}
+                            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                        >
+                            <FileText size={18} />
+                            Export PDF
+                        </button>
+                    </div>
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <StatCard icon={<BarChart3 size={24}/>} title="Avg. Pre-Test Score" value={analytics.overall.avgPre.toFixed(1)} subtitle="Class Average" />
                     <StatCard icon={<TrendingUp size={24}/>} title="Avg. Post-Test Score" value={analytics.overall.avgPost.toFixed(1)} subtitle="Class Average" />
                     <StatCard icon={<Milestone size={24}/>} title="Avg. Score Improvement" value={renderDelta(analytics.overall.avgDelta)} subtitle="Class Average Delta" />
-                    <StatCard icon={<Users size={24}/>} title="Total Students" value={classDetails.studentCount.toString()} subtitle="Enrolled in class" />
+                    <StatCard icon={<Users size={24}/>} title="Total Students" value={analytics.totalStudents.toString()} subtitle="Enrolled in class" />
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                     <div className="bg-white p-6 rounded-xl shadow-lg">
-                        <h3 className="text-lg font-bold text-slate-800 mb-4">Male Student Performance</h3>
-                        <div className="flex justify-around text-center">
-                            <div><p className="text-sm text-slate-500">Avg. Pre-Test</p><p className="text-2xl font-bold">{analytics.male.avgPre.toFixed(1)}</p></div>
-                            <div><p className="text-sm text-slate-500">Avg. Post-Test</p><p className="text-2xl font-bold">{analytics.male.avgPost.toFixed(1)}</p></div>
-                            <div><p className="text-sm text-slate-500">Improvement</p><p className="text-2xl font-bold">{renderDelta(analytics.male.avgDelta)}</p></div>
-                        </div>
+                        <h3 className="text-lg font-bold text-slate-800 mb-4">Performance Trends</h3>
+                        <ResponsiveContainer width="100%" height={300}>
+                            <LineChart data={chartData?.trendData}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="name" />
+                                <YAxis domain={[0, 100]} />
+                                <Tooltip />
+                                <Legend />
+                                <Line type="monotone" dataKey="overall" stroke="#0d9488" strokeWidth={3} name="Overall" />
+                                <Line type="monotone" dataKey="male" stroke="#3b82f6" strokeWidth={2} name="Male" />
+                                <Line type="monotone" dataKey="female" stroke="#ec4899" strokeWidth={2} name="Female" />
+                            </LineChart>
+                        </ResponsiveContainer>
                     </div>
-                     <div className="bg-white p-6 rounded-xl shadow-lg">
-                        <h3 className="text-lg font-bold text-slate-800 mb-4">Female Student Performance</h3>
-                        <div className="flex justify-around text-center">
-                            <div><p className="text-sm text-slate-500">Avg. Pre-Test</p><p className="text-2xl font-bold">{analytics.female.avgPre.toFixed(1)}</p></div>
-                            <div><p className="text-sm text-slate-500">Avg. Post-Test</p><p className="text-2xl font-bold">{analytics.female.avgPost.toFixed(1)}</p></div>
-                            <div><p className="text-sm text-slate-500">Improvement</p><p className="text-2xl font-bold">{renderDelta(analytics.female.avgDelta)}</p></div>
+                    
+                    <div className="bg-white p-6 rounded-xl shadow-lg">
+                        <h3 className="text-lg font-bold text-slate-800 mb-4">Gender Performance Comparison</h3>
+                        <ResponsiveContainer width="100%" height={300}>
+                            <BarChart data={chartData?.genderData}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="name" />
+                                <YAxis domain={[0, 100]} />
+                                <Tooltip />
+                                <Legend />
+                                <Bar dataKey="pretest" fill="#fbbf24" name="Pre-Test" />
+                                <Bar dataKey="posttest" fill="#10b981" name="Post-Test" />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <div className="bg-white p-6 rounded-xl shadow-lg">
+                        <h3 className="text-lg font-bold text-slate-800 mb-4">Score Distribution</h3>
+                        <ResponsiveContainer width="100%" height={300}>
+                            <BarChart data={chartData?.scoreRanges}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="range" />
+                                <YAxis />
+                                <Tooltip />
+                                <Bar dataKey="count" fill="#8b5cf6" />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                    
+                    <div className="bg-white p-6 rounded-xl shadow-lg">
+                        <h3 className="text-lg font-bold text-slate-800 mb-4">Improvement Overview</h3>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="text-center p-4 bg-blue-50 rounded-lg">
+                                <p className="text-sm text-blue-600 font-medium">Male Avg Improvement</p>
+                                <p className="text-2xl font-bold text-blue-800">{renderDelta(analytics.male.avgDelta)}</p>
+                            </div>
+                            <div className="text-center p-4 bg-pink-50 rounded-lg">
+                                <p className="text-sm text-pink-600 font-medium">Female Avg Improvement</p>
+                                <p className="text-2xl font-bold text-pink-800">{renderDelta(analytics.female.avgDelta)}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -137,7 +300,7 @@ const PerformanceAnalyticsPage: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {classDetails.students.map(student => {
+                                {analytics.students.map((student: any) => {
                                     const delta = (student.posttestScore ?? 0) - (student.pretestScore ?? 0);
                                     let deltaColor = 'text-slate-500';
                                     if (delta > 0) deltaColor = 'text-green-600';
@@ -160,6 +323,7 @@ const PerformanceAnalyticsPage: React.FC = () => {
                     </div>
                 </div>
             </main>
+            </div>
         </div>
     );
 };

@@ -1,21 +1,46 @@
-# Documentation Guide
+# BioLearn AI Documentation Guide
 
-This `docs` folder serves as the central repository for all project documentation. It is designed to create a seamless and professional workflow, especially when collaborating with an AI assistant.
+This `docs` folder contains comprehensive documentation for the BioLearn AI platform - an AI-powered collaborative biology education platform designed for pre-service teachers in Nigeria.
 
-## How to Use This System
+## Available Documentation
 
-1.  **Check the Status First:**
-    *   Before starting any new task, always refer to the `STATUS.md` file.
-    *   This file is the **single source of truth** for what has been completed and what the immediate next steps are.
+### User Manuals
+- **[TEACHER_MANUAL.md](TEACHER_MANUAL.md)** - Complete guide for teachers including setup, class management, and best practices
+- **[STUDENT_MANUAL.md](STUDENT_MANUAL.md)** - Comprehensive guide for students covering registration, classroom experience, and collaboration features
+- **[QUICK_START_GUIDE.md](QUICK_START_GUIDE.md)** - Concise reference for immediate platform usage
 
-2.  **Follow the Workflow:**
-    *   The `STATUS.md` file also outlines a specific workflow for initiating tasks with an AI.
-    *   **Your Role:** State the task you want to start (e.g., "Let's begin Phase 4.1").
-    *   **AI's Role(Your role):** Read `STATUS.md` and `IMPLEMENTATION_PLAN.md` to understand the task, explain the necessary steps, and wait for your approval before proceeding.
+### System Documentation
+- **[README.txt](README.txt)** - This documentation guide and overview
+- **STATUS.md** - Project status and completed tasks (when available)
+- **PRODUCT_REQUIREMENTS.md** - Project goals, user personas, and functional requirements (when available)
+- **IMPLEMENTATION_PLAN.md** - Technical implementation phases and guidelines (when available)
+- **TECHNICAL_GUIDES.md** - Service setup and deployment instructions (when available)
 
-3.  **Reference Other Documents:**
-    *   `PRODUCT_REQUIREMENTS.md`: Contains the "why" behind the features. It details the project's goals, user personas, and functional requirements.
-    *   `IMPLEMENTATION_PLAN.md`: Contains the "how" for the features. It provides a detailed, phased technical guide for building the application.
-    *   `TECHNICAL_GUIDES.md`: Contains specific setup instructions for services like Cloudinary and deployment guides for platforms like Render.
+## Platform Overview
 
-By following this structure, you ensure that you, your team, and any AI assistant are always aligned on the project's progress and next actions. The AI will be responsible for keeping the `STATUS.md` file updated as tasks are completed.
+**BioLearn AI** is a research-driven educational platform that combines:
+- **AI-powered group collaboration** with intelligent assistants
+- **Real-time classroom management** with video conferencing
+- **Pre/post assessment tracking** for educational research
+- **Comprehensive analytics** for performance monitoring
+- **Multi-format content support** (PDF, DOCX, YouTube videos)
+
+## Quick Access
+
+### For New Users
+1. Start with [QUICK_START_GUIDE.md](QUICK_START_GUIDE.md) for immediate setup
+2. Teachers: See [TEACHER_MANUAL.md](TEACHER_MANUAL.md) for full functionality
+3. Students: See [STUDENT_MANUAL.md](STUDENT_MANUAL.md) for complete guidance
+
+### For Technical Teams
+- Check for STATUS.md, PRODUCT_REQUIREMENTS.md, IMPLEMENTATION_PLAN.md, and TECHNICAL_GUIDES.md files
+- These contain detailed technical specifications and development guidelines
+
+## Support
+- **Technical Issues**: support@biolearn.ai
+- **Platform Help**: Use in-app help buttons throughout the interface
+- **Documentation Updates**: This documentation reflects the current platform state as of creation
+
+---
+
+*This documentation system ensures all users - teachers, students, and developers - have access to the information they need for successful platform usage and development.*
