@@ -168,6 +168,15 @@ export const getClassDetails = async (classId: string, token: string) => {
   return handleResponse(response);
 };
 
+export const getClassAnalytics = async (classId: string, token: string) => {
+  const response = await fetch(`${API_URL}/analytics/class/${classId}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  return handleResponse(response);
+};
+
 export const getStudentClasses = async (token: string): Promise<ClassSummary[]> => {
   const response = await fetch(`${API_URL}/enrollments/student`, {
     headers: {

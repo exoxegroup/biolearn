@@ -15,6 +15,7 @@ import groupRoutes from './routes/groupRoutes';
 import aiRoutes from './routes/aiRoutes';
 import aiTestRoutes from './routes/ai-test-routes';
 import chatRoutes from './routes/chatRoutes';
+import analyticsRoutes from './routes/analyticsRoutes';
 import { PrismaClient } from '@prisma/client';
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
@@ -338,6 +339,7 @@ app.use('/api', groupRoutes);
 app.use('/api', aiTestRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Make io accessible to routes
 app.set('io', io);

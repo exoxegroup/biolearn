@@ -46,6 +46,9 @@ yarn-error.log*
 /docs/TECHNICAL_GUIDES.md
 /docs/PRODUCT_REQUIREMENTS.md
 /docs/IMPLEMENTATION_PLAN.md
+/docs/QUICK_START_GUIDE.md
+/docs/STUDENT_MANUAL.md
+/docs/TEACHER_MANUAL.md
 /1.png
 /checker.txt
 /Cloudinary.txt
